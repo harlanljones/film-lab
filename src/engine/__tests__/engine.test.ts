@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest'; import {activeBeatIndex} from '../beats'; import {sampleTrack} from '../interpolate';
+describe('engine',()=>{it('looks up the latest beat',()=>expect(activeBeatIndex([{t:0,title:'snap'},{t:.5,title:'break'}],.6)).toBe(1));it('samples a track',()=>expect(sampleTrack({id:'x',side:'offense',role:'wr',waypoints:[{x:1,y:2,t:0},{x:3,y:4,t:1}]},.5)).toEqual({x:2,y:3}));});

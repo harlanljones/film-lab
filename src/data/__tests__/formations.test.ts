@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest';import {defenseLooks,formationTemplates,offenseFormations} from '../formations';import {validateFormation} from '../../engine/validate';
+describe('formation library',()=>{it('contains the required alignments and looks',()=>{expect(offenseFormations).toHaveLength(5);expect(defenseLooks).toHaveLength(5);expect(formationTemplates).toHaveLength(10)});it('sweeps every template',()=>{for(const template of formationTemplates)expect(validateFormation(template),template.name).toEqual([])});});

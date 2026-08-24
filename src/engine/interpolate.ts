@@ -1,0 +1,4 @@
+/** Ported from harlanljones/scheme-db (MIT). Time-uniform Catmull-Rom interpolation. */
+import type {Point,PlayerTrack} from './types';
+function blend(p0:Point,p1:Point,p2:Point,p3:Point,t:number):Point { const t2=t*t,t3=t2*t; return {x:.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),y:.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)}; }
+export function sampleTrack(track:PlayerTrack,t:number):Point { const w=track.waypoints;if(!w.length) return {x:0,y:0};if(w.length===1||t<=w[0].t)return w[0];if(t>=w[w.length-1].t)return w[w.length-1];if(w.length===2){const u=(t-w[0].t)/(w[1].t-w[0].t);return {x:w[0].x+(w[1].x-w[0].x)*u,y:w[0].y+(w[1].y-w[0].y)*u};}let i=1;while(i<w.length-2&&w[i+1].t<t)i++;const a=w[i],b=w[i+1],u=(t-a.t)/(b.t-a.t);return blend(w[i-1],a,b,w[i+2]??b,u); }

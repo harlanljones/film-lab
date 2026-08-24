@@ -1,0 +1,4 @@
+/** Ported from harlanljones/scheme-db (MIT). */
+import {useCallback,useEffect,useState} from 'react';
+export function formatTimecode(t:number){return `${Math.floor(t/60)}:${(t%60).toFixed(1).padStart(4,'0')}`;}
+export function usePlayback(duration:number){const [t,setT]=useState(0),[playing,setPlaying]=useState(false),[speed,setSpeed]=useState(1);useEffect(()=>{if(!playing)return;let previous=performance.now(),id=0;const frame=(now:number)=>{const next=t+(now-previous)/1000*speed;previous=now;if(next>=duration){setT(duration);setPlaying(false);return}setT(next);id=requestAnimationFrame(frame)};id=requestAnimationFrame(frame);return()=>cancelAnimationFrame(id)},[playing,duration,speed]);const seek=useCallback((next:number)=>setT(Math.max(0,Math.min(duration,next))),[duration]);return {t,playing,speed,seek,play:()=>setPlaying(true),pause:()=>setPlaying(false),toggle:()=>setPlaying(v=>!v),reset:()=>{setT(0);setPlaying(false)},setSpeed};}
