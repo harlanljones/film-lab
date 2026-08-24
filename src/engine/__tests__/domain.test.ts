@@ -1,4 +1,14 @@
-import {describe,expect,it} from 'vitest';import {flip,mirror,FIELD_WIDTH} from '../geometry';import {isValidPlay,validatePlay} from '../validate';import type {Play,PlayerTrack} from '../types';
-const track=(side:'offense'|'defense',i:number):PlayerTrack=>({id:`${side}-${i}`,side,role:side==='offense'?'wr':'db',waypoints:[{x:i,y:0,t:0},{x:i+1,y:5,t:1}],trail:'solid'});
-const play=():Play=>({id:'test',name:'Test',duration:1,category:'pass',defenseLook:'Cover 2',tags:[],notes:'',tracks:[...Array.from({length:7},(_,i)=>track('offense',i)),...Array.from({length:7},(_,i)=>track('defense',i))],beats:[],summary:{motive:'',keyDefender:'',whyItWorks:'',counter:''}});
-describe('7v7 domain',()=>{it('accepts a valid play',()=>expect(isValidPlay(play())).toBe(true));it('rejects counts, anchors, ordering, and trails',()=>{const p=play();p.tracks.pop();p.tracks[0].waypoints[0].t=1;p.tracks[1].waypoints.reverse();p.tracks[2].trail='zigzag' as never;expect(validatePlay(p)).toHaveLength(5)});it('mirror and flip are involutions',()=>{const p={x:7,y:-3};expect(mirror(mirror(p))).toEqual(p);expect(flip(flip(p))).toEqual(p);expect(mirror({x:0,y:0}).x).toBe(FIELD_WIDTH)});});
+import { describe, expect, it } from 'vitest';
+import { flip, mirror, FIELD_WIDTH } from '../geometry';
+import { isValidPlay, validatePlay } from '../validate';
+import type { Play, PlayerTrack } from '../types';
+
+const track = (side: 'offense' | 'defense', i: number): PlayerTrack => ({ id: `${side}-${i}`, side, role: side === 'offense' ? 'wr' : 'db', waypoints: [{ x: i, y: 0, t: 0 }, { x: i + 1, y: 5, t: 1 }], trail: 'solid' });
+const play = (): Play => ({ id: 'test', name: 'Test', duration: 1, category: 'pass', defenseLook: 'Cover 2', tags: [], notes: '', tracks: [...Array.from({ length: 7 }, (_, i) => track('offense', i)), ...Array.from({ length: 7 }, (_, i) => track('defense', i))], beats: [], summary: { motive: '', keyDefender: '', whyItWorks: '', counter: '' } });
+
+describe('7v7 domain', () => {
+  it('accepts a valid play', () => expect(isValidPlay(play())).toBe(true));
+  it('rejects counts, anchors, ordering, and trails', () => { const p = play(); p.tracks.pop(); p.tracks[0].waypoints[0].t = 1; p.tracks[1].waypoints.reverse(); p.tracks[2].trail = 'zigzag' as never; expect(validatePlay(p)).toHaveLength(5); });
+  it('rejects waypoints outside the field', () => { const p = play(); p.tracks[0].waypoints[1].x = FIELD_WIDTH + 1; expect(validatePlay(p).some((problem) => problem.includes('outside the field'))).toBe(true); });
+  it('mirror and flip are involutions', () => { const p = { x: 7, y: -3 }; expect(mirror(mirror(p))).toEqual(p); expect(flip(flip(p))).toEqual(p); expect(mirror({ x: 0, y: 0 }).x).toBe(FIELD_WIDTH); });
+});
