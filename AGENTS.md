@@ -28,7 +28,7 @@ Instructions for development agents. Precedence: direct user instruction > this 
 
 One writer per file/component at a time.
 
-## Commands — PROPOSED UNTIL SCAFFOLD VERIFICATION (M0)
+## Commands — verified at M0
 
 Verify against `package.json` at M0 and correct this table if they differ.
 

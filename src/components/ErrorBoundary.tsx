@@ -1,0 +1,2 @@
+import {Component,ReactNode} from 'react';
+export class ErrorBoundary extends Component<{children:ReactNode},{hasError:boolean}>{state={hasError:false};static getDerivedStateFromError(){return {hasError:true};}render(){if(this.state.hasError)return <section role="alert" aria-live="assertive"><h2>That view needs a reset.</h2><p>Your saved plays are safe. Reload this view to continue.</p><button onClick={()=>this.setState({hasError:false})}>Try again</button></section>;return this.props.children;}}

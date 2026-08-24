@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest';import {exportPlaybook,importPlaybook} from '../playbookStore';import {starterLibrary} from '../../data/library';
+describe('playbook JSON interchange',()=>{it('round trips a playbook',()=>{const plays=starterLibrary.slice(0,2);expect(importPlaybook(exportPlaybook(plays))).toEqual(plays)});it('rejects invalid input without merging',()=>{expect(()=>importPlaybook('{"schemaVersion":1,"plays":[]}')).toThrow('schemaVersion 2');});});
