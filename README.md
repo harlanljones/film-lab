@@ -1,6 +1,6 @@
 # Film Lab
 
-Film Lab is a local-first playbook for youth flag-football coaches. Create 7-on-7 plays from formation templates, edit routes, replay them in Film Room, and export the playbook as JSON. It has no server, account, or sync layer.
+Film Lab is a local-first playbook for youth flag-football coaches. Create 7-on-7 plays from formation templates, edit routes, replay them in Film Room, and share individual plays through validated URL-hash links or JSON export. It has no server, account, or sync layer.
 
 ## Development
 

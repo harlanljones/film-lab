@@ -1,8 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { exportPlaybook, importPlaybook, usePlaybook } from '../storage/playbookStore';
 import { starterLibrary } from '../data/library';
 import type { Play } from '../engine/types';
 import { Field7 } from './Field7';
+import { createShareUrl, decodeShareHash } from '../storage/share';
 
 type SortKey = 'name' | 'defenseLook' | 'category';
 
@@ -17,7 +18,20 @@ export function PlaybookView() {
   const [preview, setPreview] = useState<Play[] | null>(null);
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash.startsWith('#share=')) return;
+    try {
+      const shared = decodeShareHash(window.location.hash);
+      store.add(shared);
+      store.select(shared);
+      setShareMessage(`Shared play received: ${shared.name}`);
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Share link rejected');
+    }
+  }, [store.add, store.select]);
   const plays = useMemo(() => {
     const byId = new Map(starterLibrary.map((play) => [play.id, play]));
     for (const play of store.plays) byId.set(play.id, play);
@@ -49,6 +63,13 @@ export function PlaybookView() {
     const next = typeof window !== 'undefined' ? window.prompt('Rename play', play.name) : null;
     if (next?.trim()) store.upsert({ ...play, name: next.trim() });
   };
+  const share = async (play: Play) => {
+    try {
+      const url = createShareUrl(play, window.location.href);
+      if (navigator.clipboard) await navigator.clipboard.writeText(url);
+      setShareMessage(navigator.clipboard ? 'Share link copied to clipboard.' : url);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to create share link'); }
+  };
   const remove = (play: Play) => {
     if (deleteId !== play.id) { setDeleteId(play.id); return; }
     store.remove(play.id); setHiddenIds((ids) => ids.includes(play.id) ? ids : [...ids, play.id]); setDeleteId(null);
@@ -65,10 +86,11 @@ export function PlaybookView() {
     <div className="controls">
       <button onClick={() => download(exportPlaybook(filtered), 'film-lab-playbook.json')}>Export filtered ({filtered.length})</button>
       <button onClick={() => fileInput.current?.click()}>Import JSON</button>
-      <input ref={fileInput} hidden type="file" accept="application/json" onChange={async (event) => { const file = event.target.files?.[0]; if (file) await openImport(file); event.target.value = ''; }} />
+      <input ref={fileInput} hidden aria-label="Import JSON file" type="file" accept="application/json" onChange={async (event) => { const file = event.target.files?.[0]; if (file) await openImport(file); event.target.value = ''; }} />
     </div>
     {error && <p role="alert">{error}</p>}
+    {shareMessage && <p role="status">{shareMessage}</p>}
     {preview && <aside role="dialog" aria-label="Import preview"><h3>Import preview</h3><p>{preview.length} valid plays ready to import.</p><div className="controls"><button onClick={() => { store.save(preview); setPreview(null); }}>Replace playbook</button><button onClick={() => { store.save(importPlaybook(exportPlaybook(preview), store.plays)); setPreview(null); }}>Merge with playbook</button><button onClick={() => setPreview(null)}>Cancel</button></div></aside>}
-    {filtered.length === 0 ? <p role="status">No plays match these filters. Try clearing the search or filters.</p> : <div className="cards">{filtered.map((play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><h3>{play.name}</h3><p>{play.category} · {play.defenseLook}</p><p>{play.tags.join(' · ')}</p><div className="controls"><a href="#editor" onClick={() => store.select(play)}>Open in Editor</a><a href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button onClick={() => rename(play)}>Rename</button><button onClick={() => duplicate(play)}>Duplicate</button><button onClick={() => download(exportPlaybook([play]), `${play.id}.json`)}>Export</button><button onClick={() => remove(play)}>{deleteId === play.id ? 'Confirm delete' : 'Delete'}</button></div></article>)}</div>}
+    {filtered.length === 0 ? <p role="status">No plays match these filters. Try clearing the search or filters.</p> : <div className="cards">{filtered.map((play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><h3>{play.name}</h3><p>{play.category} · {play.defenseLook}</p><p>{play.tags.join(' · ')}</p><div className="controls"><a href="#editor" onClick={() => store.select(play)}>Open in Editor</a><a href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button onClick={() => share(play)}>Share link</button><button onClick={() => rename(play)}>Rename</button><button onClick={() => duplicate(play)}>Duplicate</button><button onClick={() => download(exportPlaybook([play]), `${play.id}.json`)}>Export</button><button onClick={() => remove(play)}>{deleteId === play.id ? 'Confirm delete' : 'Delete'}</button></div></article>)}</div>}
   </section>;
 }

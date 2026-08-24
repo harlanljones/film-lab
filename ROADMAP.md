@@ -29,8 +29,8 @@ matrix · native mobile · multi-league rule engines.
 | ID | Decision | Why it matters | Gate |
 |---|---|---|---|
 | U1 | Undo depth (default: last-snapshot restore) | Editor trust | D1 |
-| U2 | Share via URL hash vs file-only export | Adoption friction | D3 |
-| U3 | Coach reviewer availability for starter plays | Content trust | D2 |
+| U2 | Share via URL hash vs file-only export | Resolved: URL hash plus JSON fallback | D3 |
+| U3 | Coach reviewer availability for starter plays | Resolved: roster approved; reviewer recorded as N/A per user direction | D2 |
 
 ## Metrics
 
@@ -170,3 +170,7 @@ Integration checkpoint after each wave: typecheck → test → sweep → tagged 
 - **D1** (after editor vertical slice): interaction model + undo depth (U1) + bundle budget.
 - **D2** (before M3 lock): coach sign-off on starter roster (U3).
 - **D3** (pre-ship): ship/no-ship against metric table; resolve U2.
+
+## D3 status
+
+All v1 implementation and measured quality gates are green as of 2026-08-23. U2 is resolved to URL-hash sharing with validated JSON fallback; D2 roster approval is recorded in Linear HJ-108. See `docs/quality-gates.md` for browser evidence, Lighthouse 95/100 accessibility, ~60.4 fps playback, bundle size, and exact commands.
