@@ -31,10 +31,10 @@ export function CompareView() {
     </div>
     {player && <p role="status" aria-label="Following player">{player.name}'s view highlighted on both fields.</p>}
     <div className="compare-fields">
-      <div><Field7 tracks={left?.tracks ?? []} time={playback.t} highlightTrackIds={leftTrackId ? [leftTrackId] : undefined} aria-label={`${left?.name} comparison drill field`} /><p>{left?.name} · {leftBeat?.title ?? 'Before snap'}</p></div>
-      <div><Field7 tracks={right?.tracks ?? []} time={playback.t} highlightTrackIds={rightTrackId ? [rightTrackId] : undefined} aria-label={`${right?.name} comparison drill field`} /><p>{right?.name} · {rightBeat?.title ?? 'Before snap'}</p></div>
+      <div><Field7 tracks={left?.tracks ?? []} time={playback.t} highlightTrackIds={leftTrackId ? [leftTrackId] : undefined} aria-label={`${left?.name} comparison drill field`} /><p>{left?.name} · {leftBeat?.title ?? 'Before snap'}{leftBeat?.description ? ` · ${leftBeat.description}` : ''}</p></div>
+      <div><Field7 tracks={right?.tracks ?? []} time={playback.t} highlightTrackIds={rightTrackId ? [rightTrackId] : undefined} aria-label={`${right?.name} comparison drill field`} /><p>{right?.name} · {rightBeat?.title ?? 'Before snap'}{rightBeat?.description ? ` · ${rightBeat.description}` : ''}</p></div>
     </div>
-    <p aria-live="polite">{formatTimecode(playback.t)}</p>
+    <p aria-live="polite">{leftBeat?.title ?? 'Before snap'}{leftBeat?.description ? ` · ${leftBeat.description}` : ''} · {rightBeat?.title ?? 'Before snap'}{rightBeat?.description ? ` · ${rightBeat.description}` : ''} · {formatTimecode(playback.t)}</p>
     <input aria-label="Comparison timeline" type="range" min="0" max={duration} step=".01" value={playback.t} onChange={(event) => playback.seek(Number(event.target.value))} />
     <div className="controls"><button aria-label={playback.playing ? 'Pause comparison' : 'Play comparison'} onClick={playback.toggle}>{playback.playing ? 'Pause' : 'Play'}</button><button aria-label="Step back comparison" onClick={() => playback.seek(playback.t - .1)}>J −0.1</button><button aria-label="Step forward comparison" onClick={() => playback.seek(playback.t + .1)}>L +0.1</button><button aria-label="Reset comparison" onClick={playback.reset}>Reset</button></div>
   </section>;
