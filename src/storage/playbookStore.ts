@@ -1,6 +1,6 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Play } from '../engine/types';
-import { isValidPlay } from '../engine/validate';
+import { validatePlay } from '../engine/validate';
 
 export const SCHEMA_VERSION = 3;
 export const PLAYBOOK_KEY = 'film-lab.playbook';
@@ -72,16 +72,71 @@ export function exportPlaybook(plays: Play[]): string {
 }
 
 export function importPlaybook(raw: string, current: Play[] = []): Play[] {
+  const incoming = parseImport(raw);
+  if (incoming.some((play) => !isShapedPlay(play) || validatePlay(play).length > 0)) {
+    throw new Error('Import rejected: one or more plays failed validation');
+  }
+  return (incoming as Play[]).reduce(upsertPlay, [...current]);
+}
+
+export type ImportBucket = 'new' | 'updated' | 'unchanged' | 'invalid';
+export type ImportCandidate =
+  | { bucket: 'new'; play: Play }
+  | { bucket: 'updated'; play: Play; current: Play }
+  | { bucket: 'unchanged'; play: Play }
+  | { bucket: 'invalid'; id: string; name: string; problems: string[] };
+export type ImportPlan = { entries: ImportCandidate[]; counts: Record<ImportBucket, number> };
+
+const UNFORMED_PLAY_PROBLEM = 'Import rejected: one or more plays failed validation';
+
+function isShapedPlay(candidate: unknown): candidate is Play {
+  return typeof candidate === 'object' && candidate !== null && 'id' in candidate && Array.isArray((candidate as { tracks?: unknown }).tracks);
+}
+
+function parseImport(raw: string): unknown[] {
   let parsed: unknown;
   try { parsed = JSON.parse(raw); } catch { throw new Error('Import rejected: invalid JSON'); }
   if (!parsed || typeof parsed !== 'object' || (parsed as { schemaVersion?: unknown }).schemaVersion !== SCHEMA_VERSION) {
     throw new Error(`Import rejected: expected schemaVersion ${SCHEMA_VERSION}`);
   }
-  const incoming = (parsed as { plays?: unknown }).plays;
-  if (!Array.isArray(incoming) || incoming.some((play) => !play || typeof play !== 'object' || !('id' in play) || !isValidPlay(play as Play))) {
-    throw new Error('Import rejected: one or more plays failed validation');
+  const plays = (parsed as { plays?: unknown }).plays;
+  if (!Array.isArray(plays)) throw new Error(UNFORMED_PLAY_PROBLEM);
+  return plays;
+}
+
+function stableValue(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableValue).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableValue(record[key])}`).join(',')}}`;
   }
-  return (incoming as Play[]).reduce(upsertPlay, [...current]);
+  return JSON.stringify(value) ?? 'null';
+}
+
+export function planImport(raw: string, current: Play[]): ImportPlan {
+  const incoming = parseImport(raw);
+  const byId = new Map(current.map((play) => [play.id, play]));
+  const entries: ImportCandidate[] = [];
+  const counts: ImportPlan['counts'] = { new: 0, updated: 0, unchanged: 0, invalid: 0 };
+  for (const candidate of incoming) {
+    if (!isShapedPlay(candidate) || validatePlay(candidate).length > 0) {
+      const record = (candidate ?? {}) as { id?: unknown; name?: unknown };
+      entries.push({
+        bucket: 'invalid',
+        id: typeof record.id === 'string' ? record.id : '',
+        name: typeof record.name === 'string' ? record.name : '',
+        problems: isShapedPlay(candidate) ? validatePlay(candidate) : [UNFORMED_PLAY_PROBLEM],
+      });
+      counts.invalid += 1;
+      continue;
+    }
+    const existing = byId.get(candidate.id);
+    if (!existing) { entries.push({ bucket: 'new', play: candidate }); counts.new += 1; continue; }
+    if (stableValue(existing) === stableValue(candidate)) { entries.push({ bucket: 'unchanged', play: candidate }); counts.unchanged += 1; continue; }
+    entries.push({ bucket: 'updated', play: candidate, current: existing });
+    counts.updated += 1;
+  }
+  return { entries, counts };
 }
 
 export type PlaybookStore = {

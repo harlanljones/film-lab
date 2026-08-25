@@ -3,5 +3,9 @@ dist/
 *.local
 .DS_Store
 *.tsbuildinfo
+.codebase-memory/artifact.json
+.codebase-memory/graph.db.zst
+tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo
 /vite.config.js
 /vite.config.d.ts

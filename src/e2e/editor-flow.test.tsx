@@ -90,6 +90,23 @@ describe('editor browser-style flow', () => {
     expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual(['starter-1']);
   });
 
+  it('groups: assigns a group tag, persists it across refresh, and filters by it', async () => {
+    await renderApp();
+    const originalPrompt = window.prompt;
+    window.prompt = () => 'Red zone';
+    try {
+      await click(Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Add Mesh to group')!);
+      const stored = JSON.parse(localStorage.getItem('film-lab.playbook')!);
+      expect(stored.plays.find((play: { id: string }) => play.id === 'starter-1').tags).toContain('Red zone');
+      await act(async () => { root.unmount(); await flush(); });
+      await renderApp();
+      await change(document.querySelector('#playbook select[aria-label="Filter by group"]') as HTMLSelectElement, 'Red zone');
+      const names = Array.from(document.querySelectorAll('#playbook .card h3')).map((heading) => heading.textContent);
+      expect(names).toContain('Mesh');
+      expect(names).not.toContain('Shallow');
+    } finally { window.prompt = originalPrompt; }
+  });
+
   it('compare: renders two plays on a shared clock with synced timeline', async () => {
     await renderApp();
     const selects = Array.from(document.querySelectorAll('#compare select'));

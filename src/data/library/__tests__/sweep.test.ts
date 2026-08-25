@@ -3,7 +3,7 @@ import {starterLibrary} from '..';
 import {isValidPlay} from '../../../engine/validate';
 
 describe('starter library integrity', () => {
-  it('contains the target roster', () => expect(starterLibrary).toHaveLength(18));
+  it('contains the target roster', () => expect(starterLibrary).toHaveLength(22));
 
   it('validates every play with beats and complete summaries', () => {
     for (const play of starterLibrary) {

@@ -60,7 +60,7 @@ HJ-100..HJ-112, sweep test).
 | Vitest suites passing | 0 (no repo) | 100% incl. library sweep (18/18 plays) | MET — 30/30 (10 files) + e2e 2/2 | `bun run test`, `bun run test:e2e` | Engine Steward | per wave |
 | Ported-suite parity | upstream `__tests__/` enumerated at M0 | all ported specs green | MET — inventory + ported/scoped classification committed in `docs/parity.md` (rev `174371e`); ported engine modules (beats, interpolate mechanics, pure playback clock, validate 7v7 subset) green in the suite; 4 specs scoped out with reasons | `docs/parity.md` spec list vs upstream | Engine Steward | M0, re-audit on upstream rev change |
 | Typecheck | n/a | strict-clean | MET | `bun run typecheck` | all | per wave |
-| Initial bundle (gzip) | recorded at M0 build | budget fixed at D1 from measured base | MET — 70.00 kB gzip (223.18 kB JS / 3.20 kB CSS) | `bun run build` output | UI Steward | per release |
+| Initial bundle (gzip) | 71.6 kB JS gzip at HJ-302 baseline | ≤ 75 kB JS gzip + ≤ 2 kB CSS gzip, enforced by `bun run fps` | MET — 69.6 kB JS / 1.3 kB CSS gzip (gate-measured 2026-08-24; build log prints 72.1 via rolldown's estimator) | `bun run fps` (`docs/evidence/fps-report.json` `bundle` fields) | UI Steward | per release |
 | Playback smoothness | harness at M2 | ≥ 55 fps sustained (3 s, 1×) | MET — 59.8 fps (180 frames / 3,010.5 ms, 2026-08-24) | `bun run fps` (`scripts/fps-harness.mjs`), artifact `docs/evidence/fps-report.json` | UI Steward | pre-ship |
 | Lighthouse a11y | first run M6 | ≥ 95 | MET — 95/100 | Lighthouse CLI report artifact | UI Steward | pre-ship |
 | Library integrity | 0 | 18/18 `validatePlay` pass | MET — 18/18 | sweep test | Content Author | on library change |
