@@ -5,11 +5,12 @@
   "description": "A local-first 7-on-7 flag-football playbook and film room.",
   "author": "Harlan Jones",
   "license": "MIT",
+  "packageManager": "bun@1.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/harlanljones/film-lab.git"
   },
-  "homepage": "https://github.com/harlanljones/film-lab",
+  "homepage": "https://film-lab.harlanljones.com",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,7 +22,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "fps": "node scripts/fps-harness.mjs",
-    "deploy": "tsc -b && vite build && wrangler deploy"
+    "deploy": "tsc -b && vite build && wrangler deploy",
+    "deploy:verify": "node scripts/deploy-verify.mjs --headless"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "jsdom": "^30.0.1",
+    "lighthouse": "^13.4.1",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
     "typescript": "~6.0.2",

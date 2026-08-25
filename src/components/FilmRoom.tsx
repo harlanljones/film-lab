@@ -5,6 +5,7 @@ import { seededPlay } from '../data/seededPlay';
 import { starterLibrary } from '../data/library';
 import { findLooksForConcept } from '../data/conceptHelpers';
 import { resolveSelectedPlay, resolveSequence, usePlaybook } from '../storage/playbookStore';
+import { recordPlayOpened, recordScriptOpened } from '../storage/analytics';
 import { Field7 } from './Field7';
 import { playerBeats, resolveAssignment } from '../engine/assignments';
 import { useSelection } from './SelectionContext';
@@ -41,6 +42,10 @@ export function FilmRoom() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [playback]);
+  useEffect(() => {
+    if (!playback.playing) return;
+    if (sequence.length > 1) recordScriptOpened(sequence.join(':')); else recordPlayOpened(current.id);
+  }, [playback.playing, sequence, current.id]);
   const handleLookSwitch = (targetId: string) => {
     const target = allPlays.find((candidate) => candidate.id === targetId);
     if (!target) return;

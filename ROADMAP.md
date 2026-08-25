@@ -51,7 +51,7 @@ matrix · native mobile · multi-league rule engines.
 | U1 | Undo depth | **Last-snapshot restore** — implemented as `undoSnapshot` in `src/engine/editor.ts`, covered by editor tests | D1 |
 | U2 | Share via URL hash vs file-only export | **URL hash plus validated JSON fallback** — `src/storage/share.ts`, covered by `share.test.ts` | D3 |
 | U3 | Coach reviewer availability for starter plays | Roster approved; **reviewer recorded as N/A per user direction** (Linear HJ-108) | D2 |
-| U4 | Distribution host (2026-08-24, Linear HJ-332) | **Cloudflare Workers Static Assets, hosting only** — the built SPA is served from a Worker; playbook persistence stays localStorage; no backend app code, accounts, or sync; `wrangler` is dev tooling, not an app dependency | supports Q1 season trial |
+| U4 | Distribution host (2026-08-24, Linear HJ-332; custom domain Linear HJ-405) | **Cloudflare Workers Static Assets, hosting only** — the built SPA is served from `https://film-lab.harlanljones.com` (plus the free `https://film-lab.harlanljones.workers.dev` fallback); playbook persistence stays localStorage; no backend app code, accounts, or sync; `wrangler` is dev tooling, not an app dependency | supports Q1 season trial |
 
 ## Metrics
 
@@ -63,7 +63,7 @@ HJ-100..HJ-112, sweep test).
 | Vitest suites passing | 0 (no repo) | 100% incl. library sweep (18/18 plays) | MET — 30/30 (10 files) + e2e 2/2 | `bun run test`, `bun run test:e2e` | Engine Steward | per wave |
 | Ported-suite parity | upstream `__tests__/` enumerated at M0 | all ported specs green | MET — inventory + ported/scoped classification committed in `docs/parity.md` (rev `174371e`); ported engine modules (beats, interpolate mechanics, pure playback clock, validate 7v7 subset) green in the suite; 4 specs scoped out with reasons | `docs/parity.md` spec list vs upstream | Engine Steward | M0, re-audit on upstream rev change |
 | Typecheck | n/a | strict-clean | MET | `bun run typecheck` | all | per wave |
-| Initial bundle (gzip) | 71.6 kB JS gzip at HJ-302 baseline | ≤ 75 kB JS gzip + ≤ 2 kB CSS gzip, enforced by `bun run fps` | MET — 69.6 kB JS / 1.3 kB CSS gzip (gate-measured 2026-08-24; build log prints 72.1 via rolldown's estimator) | `bun run fps` (`docs/evidence/fps-report.json` `bundle` fields) | UI Steward | per release |
+| Initial bundle (gzip) | 71.6 kB JS gzip at HJ-302 baseline | ≤ 90 kB JS gzip + ≤ 3 kB CSS gzip, enforced by `bun run fps` | MET (re-baselined 2026-08-25 — Linear HJ-408) — 75.2 kB JS / 1.4 kB CSS gzip (gate-measured; build log prints 77.8 via rolldown's estimator); D1 budget was 75 kB and the v2 batch (HJ-334..HJ-342) legitimately grew the app past it; 90/3 keeps ~15 kB / ~1 kB headroom | `bun run fps` (`docs/evidence/fps-report.json` `bundle` fields) | UI Steward | per release |
 | Playback smoothness | harness at M2 | ≥ 55 fps sustained (3 s, 1×) | MET — 59.8 fps (180 frames / 3,010.5 ms, 2026-08-24) | `bun run fps` (`scripts/fps-harness.mjs`), artifact `docs/evidence/fps-report.json` | UI Steward | pre-ship |
 | Lighthouse a11y | first run M6 | ≥ 95 | MET — 95/100 | Lighthouse CLI report artifact | UI Steward | pre-ship |
 | Library integrity | 0 | 18/18 `validatePlay` pass | MET — 18/18 | sweep test | Content Author | on library change |
@@ -230,10 +230,10 @@ v1 is shipped. The v2 direction was re-baselined in a grilling session (2026-08-
 
 Backend/accounts/sync stay out of scope regardless (AGENTS.md).
 
-Distribution note (U4, 2026-08-24): the app additionally deploys as a **static site on
+Distribution note (U4, 2026-08-24; custom domain 2026-08-25, Linear HJ-405): the app deploys as a **static site on
 Cloudflare Workers** (`bun run deploy`, Workers Static Assets serving `dist/`). This is
 hosting only — the local-first storage model is unchanged and no backend feature scope was
-added; see the U4 decision row above.
+added; see the U4 decision row above. Production URL: `https://film-lab.harlanljones.com`; free fallback: `https://film-lab.harlanljones.workers.dev`.
 
 Open questions:
 

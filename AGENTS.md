@@ -64,7 +64,7 @@ Verified at M0 and re-confirmed post-ship; correct this table if they ever diffe
    plus a round-trip test.
 5. A11y floor: ARIA labels on player tokens, timeline controls, and editor affordances;
    core actions keyboard-reachable.
-6. No secrets in the repo (local-only app: none expected — keep it that way).
+6. No secrets in the repo (local-only app: none expected — keep it that way). No runtime env, no API tokens, no Cloudflare API keys in repo; CI secrets only.
 7. Ported upstream files keep MIT attribution headers.
 8. Ship browser gates: Lighthouse a11y ≥ 95, sustained playback ≥ 55 fps, bundle within the
    D1 budget — evidence recorded in `docs/quality-gates.md` (current: 95/100, ~60 fps,

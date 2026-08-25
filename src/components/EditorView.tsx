@@ -5,6 +5,7 @@ import type { Beat, Play, PlayerTrack, Trail } from '../engine/types';
 import { rusherDepthWarnings, validatePlay } from '../engine/validate';
 import { SITUATION_PRESETS } from '../data/situationPresets';
 import { usePlaybook } from '../storage/playbookStore';
+import { recordPlaySaved } from '../storage/analytics';
 import { Field7 } from './Field7';
 
 const initial = (off = offenseFormations[0], def = defenseLooks[0]): Play => ({ id: 'edited-play', name: 'Untitled Play', duration: 1, category: 'pass', defenseLook: def.name, tags: [], notes: '', tracks: [...off.tracks, ...def.tracks], beats: [{ t: 0, title: 'Snap' }], summary: { motive: '', keyDefender: '', whyItWorks: '', counter: '' } });
@@ -32,7 +33,7 @@ export function EditorView() {
   const updatePoint = (patch: Partial<{ x: number; y: number; t: number }>) => commit((current) => updateWaypointPoint(current, selected, waypointIndex, patch));
   const movePoint = (direction: -1 | 1) => commit((current) => moveWaypoint(current, selected, waypointIndex, direction));
   const removePoint = () => { commit((current) => removeWaypoint(current, selected, waypointIndex)); setSelectedWaypoint((index) => Math.max(0, index - 1)); };
-  const save = () => { store.select(play); setSaved(true); setPrevious(undefined); };
+  const save = () => { store.select(play); setSaved(true); setPrevious(undefined); recordPlaySaved(); };
   const undo = () => { if (!previous) return; setPlay(undoSnapshot(play, previous)); setPrevious(undefined); setSaved(false); };
   const duplicate = () => { let suffix = 1; let id = `${play.id}-copy-${suffix}`; while (store.plays.some((candidate) => candidate.id === id)) id = `${play.id}-copy-${++suffix}`; const copy = duplicatePlay(play, id); setPrevious(play); setPlay(copy); store.select(copy); };
   const deletePlay = () => { if (!deleteArmed) { setDeleteArmed(true); return; } store.remove(play.id); setPlay(initial()); setPrevious(undefined); setDeleteArmed(false); setSaved(false); };

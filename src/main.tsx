@@ -8,13 +8,16 @@ import { StorageAlert } from './components/StorageAlert';
 import { CompareView } from './components/CompareView';
 import { QuizView } from './components/QuizView';
 import { WristbandView } from './components/WristbandCard';
+import { PreviewBanner } from './components/PreviewBanner';
 import { PlaybookProvider } from './storage/playbookStore';
 import { SelectionProvider } from './components/SelectionContext';
+import { rolloutOnLoad } from './storage/analytics';
 import './style.css';
 
 export function App() {
-  return <PlaybookProvider><SelectionProvider><main><a className="skip" href="#editor">Skip to editor</a><nav aria-label="Primary"><a href="#editor">Editor</a><a href="#playbook">Playbook</a><a href="#film-room">Film Room</a><a href="#compare">Compare</a><a href="#quiz">Quiz</a><a href="#wristband">Wristband</a></nav><StorageAlert /><p className="eyebrow">FILM LAB</p><h1>Draw the play.<br />See the picture.</h1><p className="lede">A local-first 7-on-7 playbook for coaches.</p><div id="editor"><ErrorBoundary><EditorView /></ErrorBoundary></div><div id="playbook"><ErrorBoundary><PlaybookView /></ErrorBoundary></div><div id="film-room"><ErrorBoundary><FilmRoom /></ErrorBoundary></div><div id="compare"><ErrorBoundary><CompareView /></ErrorBoundary></div><div id="quiz"><ErrorBoundary><QuizView /></ErrorBoundary></div><div id="wristband"><ErrorBoundary><WristbandView /></ErrorBoundary></div></main></SelectionProvider></PlaybookProvider>;
+  return <PlaybookProvider><SelectionProvider><main><PreviewBanner /><a className="skip" href="#editor">Skip to editor</a><nav aria-label="Primary"><a href="#editor">Editor</a><a href="#playbook">Playbook</a><a href="#film-room">Film Room</a><a href="#compare">Compare</a><a href="#quiz">Quiz</a><a href="#wristband">Wristband</a></nav><StorageAlert /><p className="eyebrow">FILM LAB</p><h1>Draw the play.<br />See the picture.</h1><p className="lede">A local-first 7-on-7 playbook for coaches.</p><div id="editor"><ErrorBoundary><EditorView /></ErrorBoundary></div><div id="playbook"><ErrorBoundary><PlaybookView /></ErrorBoundary></div><div id="film-room"><ErrorBoundary><FilmRoom /></ErrorBoundary></div><div id="compare"><ErrorBoundary><CompareView /></ErrorBoundary></div><div id="quiz"><ErrorBoundary><QuizView /></ErrorBoundary></div><div id="wristband"><ErrorBoundary><WristbandView /></ErrorBoundary></div></main></SelectionProvider></PlaybookProvider>;
 }
 
 const rootElement = document.getElementById('root');
+rolloutOnLoad();
 if (rootElement) createRoot(rootElement).render(<StrictMode><App /></StrictMode>);

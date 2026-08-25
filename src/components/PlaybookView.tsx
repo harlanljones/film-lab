@@ -6,6 +6,7 @@ import { groupByConcept } from '../data/conceptHelpers';
 import type { Play } from '../engine/types';
 import { Field7 } from './Field7';
 import { createShareUrl, decodeShareHash } from '../storage/share';
+import { recordPlayShared } from '../storage/analytics';
 import { RosterPanel } from './RosterPanel';
 import { AssignmentPicker } from './AssignmentPicker';
 
@@ -104,6 +105,7 @@ export function PlaybookView() {
       const url = createShareUrl(play, window.location.href);
       if (navigator.clipboard) await navigator.clipboard.writeText(url);
       setShareMessage(navigator.clipboard ? 'Share link copied to clipboard.' : url);
+      recordPlayShared();
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to create share link'); }
   };
   const remove = (play: Play) => {

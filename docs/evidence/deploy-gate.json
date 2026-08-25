@@ -1,0 +1,47 @@
+{
+  "startedAt": "2026-08-25T22:49:26.929Z",
+  "url": "https://film-lab.harlanljones.workers.dev",
+  "sha": "?",
+  "checks": {
+    "html_serves": {
+      "ok": true,
+      "status": 200,
+      "elapsedMs": 149
+    },
+    "asset_headers": {
+      "ok": true,
+      "css": {
+        "statusCode": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "immutable": true
+      },
+      "js": {
+        "statusCode": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "immutable": true
+      }
+    },
+    "bundle_size": {
+      "ok": true,
+      "jsKbGzip": 75.3,
+      "cssKbGzip": 1.9,
+      "budget": {
+        "js": 90,
+        "css": 3
+      }
+    },
+    "secrets_in_dist": {
+      "ok": true
+    },
+    "lighthouse_a11y": {
+      "ok": true,
+      "score": 95
+    },
+    "browser_walk": {
+      "ok": true,
+      "savedToLs": false,
+      "consoleErrors": []
+    }
+  },
+  "pass": true
+}

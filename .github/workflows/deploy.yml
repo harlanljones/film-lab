@@ -1,0 +1,138 @@
+# Film Lab — CI/CD (FL-DEPLOY-05 / HJ-403) + PR previews (FL-DEPLOY-04 / HJ-402).
+#
+# Every push to main and every PR runs the full quality-gate suite. On push to
+# main, the production build deploys to Workers Static Assets. On pull_request,
+# a version is uploaded to the preview alias pr-<number> and its URL is posted
+# as a PR comment (unique preview URL per PR; re-push re-uploads the same alias).
+# Deployment auth uses the two repo secrets below (never committed — AGENTS.md §6).
+#
+# Required GitHub Actions secrets:
+#   CLOUDFLARE_API_TOKEN  — Cloudflare dashboard -> My Profile -> API Tokens ->
+#                           "Edit Cloudflare Workers" template, scoped to this
+#                           account and the film-lab script.
+#   CLOUDFLARE_ACCOUNT_ID — the 32-hex string in your Workers dashboard sidebar.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Lint
+        run: bun run lint
+      - name: Test (library sweep included)
+        run: bun run test
+      - name: Build
+        run: bun run build
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: '--verbose'
+      - name: No vars/secrets in wrangler.jsonc check
+        run: |
+          if grep -qE '("vars":|"secrets":)' wrangler.jsonc; then
+            echo "ERROR: Found 'vars:' or 'secrets:' block in wrangler.jsonc. These must be set via wrangler secret put with an ADR/Linear ticket reference."
+            exit 1
+          fi
+          echo "PASS: No vars/secrets blocks in wrangler.jsonc"
+      - name: No process.env in bundle check
+        run: |
+          JS_FILES=$(ls -1 dist/assets/*.js)
+          for js in $JS_FILES; do
+            if grep -q 'process.env' "$js"; then
+              echo "ERROR: Found 'process.env' in bundle file $js (Vite would inline env vars from build-time — this would leak secrets)."
+              exit 1
+            fi
+          done
+          echo "PASS: No process.env in bundle"
+
+  preview:
+    name: Preview deploy
+    if: github.event_name == 'pull_request'
+    needs: quality
+    runs-on: ubuntu-latest
+    environment: preview
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Build
+        run: bun run build
+      - name: Upload preview version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          bunx wrangler versions upload \
+            --preview-alias "pr-${{ github.event.pull_request.number }}" \
+            --message "PR ${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}"
+      - name: Post preview URL
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- film-lab-preview -->
+            Preview deployed:
+            `https://pr-${{ github.event.pull_request.number }}-film-lab.harlanljones.workers.dev/?preview=${{ github.event.pull_request.head.sha }}`
+            Commit `${{ github.event.pull_request.head.sha }}` — not production. Pull requests update this URL in place.
+
+  deploy:
+    name: Deploy to production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: quality
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Deploy (build + Workers Static Assets)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bun run deploy
+
+  post-deploy:
+    name: Post-deploy verification gate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Lighthouse CI
+        run: npm install -g lighthouse
+      - name: Run post-deploy verification
+        run: |
+          # Wait for CF propagation (10s)
+          sleep 10
+          bun run deploy:verify --url https://film-lab.harlanljones.com --headless

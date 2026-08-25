@@ -10,6 +10,12 @@
  * stay within budget or the run fails. Builds first so both gates measure
  * fresh output.
  *
+ * Budget re-baseline 2026-08-25 (Linear HJ-408): 90 kB JS / 3 kB CSS gzip.
+ * The D1 75 kB budget was set before the v2 feature batch; the app grew to
+ * 75.2 kB via legitimate added features (HJ-334..HJ-342). 90/3 gives ~15 kB /
+ * ~1 kB headroom so a single added feature or an accidental import trips the
+ * gate instead of the app silently crossing it.
+ *
  * Usage: bun run fps
  * Requires: playwright devDependency + a chromium browser (bun install brings
  * the driver; the browser comes from ~/.cache/ms-playwright).
@@ -21,7 +27,7 @@ import { gzipSync } from 'node:zlib';
 const PORT = 4173;
 const SUSTAINED_MS = 3000;
 const MIN_FPS = 55;
-const BUDGET_KB_GZIP = { js: 75, css: 2 };
+const BUDGET_KB_GZIP = { js: 90, css: 3 };
 
 function distGzipKb(ext) {
   const bytes = readdirSync('dist/assets')
