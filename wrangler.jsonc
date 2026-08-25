@@ -1,14 +1,17 @@
 // Film Lab — static hosting only (ROADMAP U4, Linear HJ-332, FL-DEPLOY-03 HJ-401, FL-DEPLOY-07 HJ-405).
 // Serves the Vite build via Workers Static Assets; no Worker code, no server-side storage.
+// NOTE: the custom domain film-lab.harlanljones.com is attached to this Worker in the
+// Cloudflare dashboard (Custom Domains), so it must NOT also be declared as a `route`
+// here — declaring it triggers error 10038. workers_dev stays enabled as the fallback URL.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "film-lab",
   "compatibility_date": "2026-08-24",
   "placement": { "mode": "smart" },
   "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "workers_dev": true,
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
-  },
-  "routes": ["https://film-lab.harlanljones.workers.dev/*", "https://film-lab.harlanljones.com/*"]
+  }
 }

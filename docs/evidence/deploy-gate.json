@@ -1,12 +1,14 @@
 {
-  "startedAt": "2026-08-25T22:49:26.929Z",
+  "startedAt": "2026-08-25T23:46:56.008Z",
   "url": "https://film-lab.harlanljones.workers.dev",
   "sha": "?",
   "checks": {
     "html_serves": {
       "ok": true,
       "status": 200,
-      "elapsedMs": 149
+      "elapsedMs": 174,
+      "isApp": true,
+      "isBlockPage": false
     },
     "asset_headers": {
       "ok": true,
@@ -23,7 +25,7 @@
     },
     "bundle_size": {
       "ok": true,
-      "jsKbGzip": 75.3,
+      "jsKbGzip": 75.7,
       "cssKbGzip": 1.9,
       "budget": {
         "js": 90,

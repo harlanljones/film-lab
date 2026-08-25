@@ -11,7 +11,7 @@ import { WristbandView } from './components/WristbandCard';
 import { PreviewBanner } from './components/PreviewBanner';
 import { PlaybookProvider } from './storage/playbookStore';
 import { SelectionProvider } from './components/SelectionContext';
-import { rolloutOnLoad } from './storage/analytics';
+import { rolloutOnLoad, initWebAnalyticsBeacon } from './storage/analytics';
 import './style.css';
 
 export function App() {
@@ -20,4 +20,5 @@ export function App() {
 
 const rootElement = document.getElementById('root');
 rolloutOnLoad();
+initWebAnalyticsBeacon();
 if (rootElement) createRoot(rootElement).render(<StrictMode><App /></StrictMode>);

@@ -127,3 +127,22 @@ export function recordPlaySaved(): void {
 export function recordPlayShared(): void {
   trackEvent('play_shared');
 }
+
+/**
+ * Load the Cloudflare Web Analytics page beacon ONLY when a real token is
+ * provided at build time via VITE_CF_WEB_ANALYTICS_TOKEN. Off by default —
+ * no beacon, no network call, no console noise — so the local-first /
+ * single-coach-opt-in framing holds until the user opts in. The token is a
+ * public site id (not a secret) but is supplied via env, never hardcoded.
+ */
+export function initWebAnalyticsBeacon(): void {
+  const token = import.meta.env.VITE_CF_WEB_ANALYTICS_TOKEN as string | undefined;
+  if (!token || token.includes('VITE_CF_WEB_ANALYTICS_TOKEN')) return;
+  const head = typeof document !== 'undefined' ? document.head : null;
+  if (!head) return;
+  const s = document.createElement('script');
+  s.defer = true;
+  s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  s.dataset.cfBeacon = JSON.stringify({ token });
+  head.appendChild(s);
+}
