@@ -167,6 +167,9 @@ export type PlaybookStore = {
   save: (plays: Play[]) => void;
   setSequence: (sequence: ScriptItem[]) => void;
   setRoster: (roster: RosterPlayer[]) => void;
+  addRosterPlayer: (player: RosterPlayer) => void;
+  updateRosterPlayer: (id: string, patch: Partial<Omit<RosterPlayer, 'id'>>) => void;
+  removeRosterPlayer: (id: string) => void;
   upsert: (play: Play) => void;
   select: (play: Play) => void;
   add: (play: Play) => void;
@@ -187,6 +190,9 @@ export function PlaybookProvider({ children }: { children: ReactNode }) {
   const save = useCallback((plays: Play[]) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, plays })), []);
   const setSequence = useCallback((sequence: ScriptItem[]) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, sequence })), []);
   const setRoster = useCallback((roster: RosterPlayer[]) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, roster })), []);
+  const addRosterPlayer = useCallback((player: RosterPlayer) => setDocument((current) => (current.roster.some((existing) => existing.id === player.id) ? current : { ...current, schemaVersion: SCHEMA_VERSION, roster: [...current.roster, player] })), []);
+  const updateRosterPlayer = useCallback((id: string, patch: Partial<Omit<RosterPlayer, 'id'>>) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, roster: current.roster.map((player) => player.id === id ? { ...player, ...patch } : player) })), []);
+  const removeRosterPlayer = useCallback((id: string) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, roster: current.roster.filter((player) => player.id !== id) })), []);
   const upsert = useCallback((play: Play) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, plays: upsertPlay(current.plays, play) })), []);
   const select = useCallback((play: Play) => {
     setSelectedPlayId(play.id);
@@ -195,7 +201,7 @@ export function PlaybookProvider({ children }: { children: ReactNode }) {
   }, []);
   const add = useCallback((play: Play) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, plays: upsertPlay(current.plays, play) })), []);
   const remove = useCallback((id: string) => setDocument((current) => ({ ...current, schemaVersion: SCHEMA_VERSION, plays: current.plays.filter((play) => play.id !== id), sequence: current.sequence.filter((item) => item.playId !== id) })), []);
-  return createElement(PlaybookContext.Provider, { value: { plays: document.plays, selectedPlayId, sequence: document.sequence, roster: document.roster, save, setSequence, setRoster, upsert, select, add, remove, error } }, children);
+  return createElement(PlaybookContext.Provider, { value: { plays: document.plays, selectedPlayId, sequence: document.sequence, roster: document.roster, save, setSequence, setRoster, addRosterPlayer, updateRosterPlayer, removeRosterPlayer, upsert, select, add, remove, error } }, children);
 }
 
 export function usePlaybook(): PlaybookStore {

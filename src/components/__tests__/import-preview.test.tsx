@@ -6,6 +6,7 @@ import { PlaybookView } from '../PlaybookView';
 import { PLAYBOOK_KEY, PlaybookProvider, SCHEMA_VERSION, savePlaybook } from '../../storage/playbookStore';
 import { seededPlay } from '../../data/seededPlay';
 import { validatePlay } from '../../engine/validate';
+import { SelectionProvider } from '../SelectionContext';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -15,7 +16,7 @@ let root: Root;
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 async function renderView() {
-  await act(async () => { root = createRoot(container); root.render(<PlaybookProvider><PlaybookView /></PlaybookProvider>); await flush(); });
+  await act(async () => { root = createRoot(container); root.render(<PlaybookProvider><SelectionProvider><PlaybookView /></SelectionProvider></PlaybookProvider>); await flush(); });
 }
 
 async function importFile(raw: string) {
@@ -41,7 +42,7 @@ describe('Import preview plan', () => {
 
   it('renders bucket badges, per-row labels, defaults, and applies only selected plays', async () => {
     const alpha = { ...seededPlay, id: 'alpha', name: 'Alpha' };
-    savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [alpha], sequence: [] });
+    savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [alpha], sequence: [], roster: [] });
     const beta = { ...seededPlay, id: 'beta', name: 'Beta' };
     const alphaV2 = { ...alpha, notes: 'Alpha v2 scouting note.' };
     const broken = { ...seededPlay, id: 'broken', name: 'Broken', tracks: [] };

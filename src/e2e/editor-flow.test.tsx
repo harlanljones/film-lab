@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../main';
+import { seededPlay } from '../data/seededPlay';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -126,6 +127,28 @@ describe('editor browser-style flow', () => {
     await click(Array.from(document.querySelectorAll('#film-room button')).find((button) => button.getAttribute('aria-label') === 'Branch to Crossers')!);
     const timeline = document.querySelector('#film-room input[aria-label="Playback timeline"]') as HTMLInputElement;
     expect(Number(timeline.value)).toBeCloseTo(.45, 1);
+  });
+
+  it('assignments: roster add → role binding → film room highlights that player and filters beats', async () => {
+    const mesh = { ...seededPlay, id: 'mesh-play', name: 'Mesh One' };
+    localStorage.setItem('film-lab.playbook', JSON.stringify({ schemaVersion: 4, plays: [mesh], sequence: [], roster: [] }));
+    await renderApp();
+    const nameInput = document.querySelector('#playbook input[aria-label="New player name"]') as HTMLInputElement;
+    const numberInput = document.querySelector('#playbook input[aria-label="New player number"]') as HTMLInputElement;
+    const roleSelect = document.querySelector('#playbook select[aria-label="New player role"]') as HTMLSelectElement;
+    await change(nameInput, 'Quinn');
+    await change(numberInput, '7');
+    await change(roleSelect, 'qb');
+    await click(document.querySelector('#playbook aside[aria-label="Roster"] button[type="submit"]')!);
+    const myAssignmentButton = Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Select Quinn for my assignments');
+    expect(myAssignmentButton).toBeDefined();
+    await click(myAssignmentButton!);
+    const assignmentsList = document.querySelector('#playbook ol[aria-label="Quinn assignments"]');
+    expect(assignmentsList?.textContent ?? '').toContain('Mesh One');
+    const following = document.querySelector('#film-room p[aria-label="Following player"]')?.textContent;
+    expect(following ?? '').toContain('Quinn');
+    const dimmed = document.querySelectorAll('#film-room svg.field g.dim').length;
+    expect(dimmed).toBeGreaterThan(0);
   });
 });
 

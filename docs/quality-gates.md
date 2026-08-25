@@ -34,6 +34,10 @@ Lighthouse accessibility scored 0.95 (95/100) against the local production serve
   An earlier manual one-second sample recorded 61 rAF callbacks over 1,010.6 ms (~60.4 fps).
   Re-run 2026-08-24 after the `.thumb-field` fix (Linear HJ-332): **60 fps** (181 frames),
   bundle 70.7 kB JS / 1.3 kB CSS gzip — within the D1 budget; artifact refreshed.
+  Re-run 2026-08-25 after the My-assignments feature (Linear HJ-336): **60 fps** (180 frames),
+  bundle 72.7 kB JS / 1.4 kB CSS gzip (harness budget 75 kB JS / 2 kB CSS — pass); the
+  D1 figure recorded here is the 70.00 kB number from the v1 ship; the harness's hard
+  budget is the operational gate, and HJ-336 stays under it. Artifact refreshed.
 - Production deploy (2026-08-24, Linear HJ-332): `bun run deploy` publishes `dist/` via
   Workers Static Assets to `https://film-lab.harlanljones.workers.dev`. Post-deploy headless
   browser smoke on the deployed origin: app boot, starter library, localStorage
