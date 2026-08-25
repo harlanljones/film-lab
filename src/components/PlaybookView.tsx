@@ -100,10 +100,10 @@ export function PlaybookView() {
     store.remove(play.id); setHiddenIds((ids) => ids.includes(play.id) ? ids : [...ids, play.id]); setDeleteId(null);
   };
   const byId = useMemo(() => new Map(plays.map((play) => [play.id, play])), [plays]);
-  const sequencePlays = store.sequence.map((id) => byId.get(id)).filter((play): play is Play => Boolean(play));
-  const inSequence = (id: string) => store.sequence.includes(id);
-  const addToSequence = (play: Play) => store.setSequence(inSequence(play.id) ? store.sequence : [...store.sequence, play.id]);
-  const removeFromSequence = (id: string) => store.setSequence(store.sequence.filter((playId) => playId !== id));
+  const sequencePlays = store.sequence.map((item) => byId.get(item.playId)).filter((play): play is Play => Boolean(play));
+  const inSequence = (id: string) => store.sequence.some((item) => item.playId === id);
+  const addToSequence = (play: Play) => store.setSequence(inSequence(play.id) ? store.sequence : [...store.sequence, { playId: play.id }]);
+  const removeFromSequence = (id: string) => store.setSequence(store.sequence.filter((item) => item.playId !== id));
   const moveSequence = (index: number, direction: -1 | 1) => {
     const target = index + direction;
     if (target < 0 || target >= store.sequence.length) return;

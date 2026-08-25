@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BACKUP_KEY, PLAYBOOK_KEY, SCHEMA_VERSION, loadPlaybook, migrateDocument, planImport, resolveSelectedPlay, resolveSequence, savePlaybook, upsertPlay } from '../playbookStore';
+import { BACKUP_KEY, PLAYBOOK_KEY, SCHEMA_VERSION, loadPlaybook, migrateDocument, planImport, resolveSelectedPlay, resolveSequence, savePlaybook, upsertPlay, exportPlaybookDocument, importPlaybookDocument } from '../playbookStore';
 import { seededPlay } from '../../data/seededPlay';
 import { validatePlay } from '../../engine/validate';
 
@@ -8,15 +8,32 @@ const withSortedKeys = (value: unknown): unknown => Array.isArray(value) ? value
 
 describe('playbook store', () => {
   beforeEach(() => localStorage.clear());
-  it('round trips documents', () => { const doc = { schemaVersion: SCHEMA_VERSION, plays: [play], sequence: ['p1'] }; savePlaybook(doc); expect(loadPlaybook()).toEqual(doc); });
-  it('migrates v1 to v3', () => { expect(migrateDocument({ schemaVersion: 1, plays: [{ ...play, notes: undefined }], sequence: [] })).toEqual({ schemaVersion: 3, plays: [play], sequence: [] }); });
-  it('migrates v2 to v3 preserving sequence', () => { expect(migrateDocument({ schemaVersion: 2, plays: [play], sequence: ['p1'] })).toEqual({ schemaVersion: 3, plays: [play], sequence: ['p1'] }); });
-  it('round trips user group tags on plays across reload', () => { const grouped = { ...play, tags: ['starter', 'red zone', 'goal line'] }; savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [grouped], sequence: [] }); expect(loadPlaybook()).toEqual({ schemaVersion: SCHEMA_VERSION, plays: [grouped], sequence: [] }); });
-  it('migrates legacy documents without touching play tags', () => { const grouped = { ...play, tags: ['fall package'] }; expect(migrateDocument({ schemaVersion: 2, plays: [grouped], sequence: [] })).toEqual({ schemaVersion: 3, plays: [grouped], sequence: [] }); });
-  it('backs up before overwrite', () => { savePlaybook({ schemaVersion: 3, plays: [play], sequence: [] }); const next = { ...play, id: 'p2' }; savePlaybook({ schemaVersion: 3, plays: [next], sequence: [] }); expect(JSON.parse(localStorage.getItem(BACKUP_KEY)!)).toEqual({ schemaVersion: 3, plays: [play], sequence: [] }); expect(JSON.parse(localStorage.getItem(PLAYBOOK_KEY)!)).toEqual({ schemaVersion: 3, plays: [next], sequence: [] }); });
+  it('round trips documents', () => { const doc = { schemaVersion: SCHEMA_VERSION, plays: [play], sequence: [{ playId: 'p1', reps: 3 }], roster: [{ id: 'r1', name: 'Maya', number: 7 }] }; savePlaybook(doc); expect(loadPlaybook()).toEqual(doc); });
+  it('migrates v1 to v4', () => { expect(migrateDocument({ schemaVersion: 1, plays: [{ ...play, notes: undefined }], sequence: [] })).toEqual({ schemaVersion: 4, plays: [play], sequence: [], roster: [] }); });
+  it('migrates v2 to v4 preserving sequence', () => { expect(migrateDocument({ schemaVersion: 2, plays: [play], sequence: ['p1'] })).toEqual({ schemaVersion: 4, plays: [play], sequence: [{ playId: 'p1' }], roster: [] }); });
+  it('migrates v3 string sequences into script items', () => { expect(migrateDocument({ schemaVersion: 3, plays: [play], sequence: ['p1', 'p2'] })).toEqual({ schemaVersion: 4, plays: [play], sequence: [{ playId: 'p1' }, { playId: 'p2' }], roster: [] }); });
+  it('round trips user group tags on plays across reload', () => { const grouped = { ...play, tags: ['starter', 'red zone', 'goal line'] }; savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [grouped], sequence: [], roster: [] }); expect(loadPlaybook()).toEqual({ schemaVersion: SCHEMA_VERSION, plays: [grouped], sequence: [], roster: [] }); });
+  it('migrates legacy documents without touching play tags', () => { const grouped = { ...play, tags: ['fall package'] }; expect(migrateDocument({ schemaVersion: 2, plays: [grouped], sequence: [] })).toEqual({ schemaVersion: 4, plays: [grouped], sequence: [], roster: [] }); });
+  it('backs up before overwrite', () => { savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [play], sequence: [], roster: [] }); const next = { ...play, id: 'p2' }; savePlaybook({ schemaVersion: SCHEMA_VERSION, plays: [next], sequence: [], roster: [] }); expect(JSON.parse(localStorage.getItem(BACKUP_KEY)!)).toEqual({ schemaVersion: SCHEMA_VERSION, plays: [play], sequence: [], roster: [] }); expect(JSON.parse(localStorage.getItem(PLAYBOOK_KEY)!)).toEqual({ schemaVersion: SCHEMA_VERSION, plays: [next], sequence: [], roster: [] }); });
   it('upserts without dropping unrelated plays', () => { const other = { ...play, id: 'p2' }; const edited = { ...play, name: 'Edited' }; expect(upsertPlay([play, other], edited)).toEqual([edited, other]); expect(upsertPlay([play], other)).toEqual([play, other]); });
   it('resolves selected play and safe fallbacks', () => { const other = { ...play, id: 'p2' }; const fallback = { ...play, id: 'fallback' }; expect(resolveSelectedPlay([play, other], 'p2', fallback)).toEqual(other); expect(resolveSelectedPlay([play, other], 'missing', fallback)).toEqual(play); expect(resolveSelectedPlay([], 'missing', fallback)).toEqual(fallback); });
-  it('resolves sequence ids in order and falls back to all plays when empty', () => { const other = { ...play, id: 'p2' }; expect(resolveSequence([play, other], ['p2', 'p1'])).toEqual([other, play]); expect(resolveSequence([play, other], ['missing', 'p2'])).toEqual([other]); expect(resolveSequence([play, other], [])).toEqual([play, other]); });
+  it('resolves sequence items in order and falls back to all plays when empty', () => { const other = { ...play, id: 'p2' }; expect(resolveSequence([play, other], [{ playId: 'p2' }, { playId: 'p1' }])).toEqual([other, play]); expect(resolveSequence([play, other], [{ playId: 'missing' }, { playId: 'p2' }])).toEqual([other]); expect(resolveSequence([play, other], [])).toEqual([play, other]); });
+  it('document interchange merges plays and adopts script and roster wholesale', () => {
+    const alpha = { ...seededPlay, id: 'alpha', concept: 'Alpha Concept' };
+    const current = { schemaVersion: SCHEMA_VERSION, plays: [play], sequence: [{ playId: 'stale' }], roster: [{ id: 'r1', name: 'Old' }] };
+    const incoming = { schemaVersion: SCHEMA_VERSION, plays: [alpha], sequence: [{ playId: 'alpha', reps: 2 }], roster: [{ id: 'r9', name: 'Maya', number: 7, role: 'wr' }] };
+    const doc = importPlaybookDocument(exportPlaybookDocument(incoming as never), current);
+    expect(doc.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(doc.plays).toEqual([play, alpha]);
+    expect(doc.sequence).toEqual([{ playId: 'alpha', reps: 2 }]);
+    expect(doc.roster).toEqual(incoming.roster);
+  });
+  it('document interchange keeps the roster when the file omits one', () => {
+    const roster = [{ id: 'r1', name: 'Maya' }];
+    const doc = importPlaybookDocument(JSON.stringify({ schemaVersion: SCHEMA_VERSION, plays: [] }), { schemaVersion: SCHEMA_VERSION, plays: [], sequence: [], roster });
+    expect(doc.roster).toEqual(roster);
+    expect(() => importPlaybookDocument('{"schemaVersion":3,"plays":[]}', { schemaVersion: SCHEMA_VERSION, plays: [], sequence: [], roster })).toThrow(`expected schemaVersion ${SCHEMA_VERSION}`);
+  });
   it('planImport rejects invalid JSON with the structural message', () => { expect(() => planImport('{nope', [])).toThrow('Import rejected: invalid JSON'); });
   it('planImport rejects a wrong schemaVersion with the exact message', () => { expect(() => planImport('{"schemaVersion":2,"plays":[]}', [])).toThrow(`Import rejected: expected schemaVersion ${SCHEMA_VERSION}`); });
   it('planImport classifies one file into all four buckets', () => {

@@ -34,7 +34,7 @@ export function PlayerMarker({ point, role, side, selected = false, onSelect }: 
 
 type Field7Props = { tracks?: PlayerTrack[]; time?: number; selectedTrackId?: string; onPlayerSelect?: (trackId: string) => void; onPointSelect?: (point: Point) => void; onWaypointSelect?: (trackId: string, index: number) => void; onWaypointMove?: (trackId: string, index: number, point: Point) => void; className?: string; children?: ReactNode; 'aria-label'?: string };
 
-export function Field7({ tracks = [], time, selectedTrackId, onPlayerSelect, onPointSelect, onWaypointSelect, onWaypointMove, className = '', children, 'aria-label': ariaLabel = '7-on-7 drill canvas' }: Field7Props) {
+export function Field7({ tracks = [], time, selectedTrackId, onPlayerSelect, onPointSelect, onWaypointSelect, onWaypointMove, className = '', children, 'aria-label': ariaLabel = '7-on-7 drill field' }: Field7Props) {
   const [dragging, setDragging] = useState<{ trackId: string; index: number } | null>(null);
   const height = Math.max(...tracks.flatMap((track) => track.waypoints.map((point) => point.t)), 0);
   const markerTime = time ?? height;

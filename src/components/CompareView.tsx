@@ -24,8 +24,8 @@ export function CompareView() {
       <label>Right play <select aria-label="Right play to compare" value={rightId} onChange={(event) => setRightId(event.target.value)}>{selectOptions}</select></label>
     </div>
     <div className="compare-fields">
-      <div><Field7 tracks={left?.tracks ?? []} time={playback.t} aria-label={`${left?.name} comparison drill canvas`} /><p>{left?.name} · {leftBeat?.title ?? 'Before snap'}</p></div>
-      <div><Field7 tracks={right?.tracks ?? []} time={playback.t} aria-label={`${right?.name} comparison drill canvas`} /><p>{right?.name} · {rightBeat?.title ?? 'Before snap'}</p></div>
+      <div><Field7 tracks={left?.tracks ?? []} time={playback.t} aria-label={`${left?.name} comparison drill field`} /><p>{left?.name} · {leftBeat?.title ?? 'Before snap'}</p></div>
+      <div><Field7 tracks={right?.tracks ?? []} time={playback.t} aria-label={`${right?.name} comparison drill field`} /><p>{right?.name} · {rightBeat?.title ?? 'Before snap'}</p></div>
     </div>
     <p aria-live="polite">{formatTimecode(playback.t)}</p>
     <input aria-label="Comparison timeline" type="range" min="0" max={duration} step=".01" value={playback.t} onChange={(event) => playback.seek(Number(event.target.value))} />

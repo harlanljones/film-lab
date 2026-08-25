@@ -37,7 +37,7 @@ const makePlay = (spec: StarterSpec, index: number): Play => {
     wr1: route(4, wr1x, wr1y), wr2: route(36, wr2x, wr2y),
     slot1: route(10, slot1x, slot1y), slot2: route(30, slot2x, slot2y),
   };
-  return {...seededPlay, id: `starter-${index + 1}`, name: spec.name, defenseLook: spec.look, tags: ['starter', spec.name.toLowerCase(), spec.variant], notes: `${spec.name} (${spec.variant}) versus ${spec.look}.`, tracks: seededPlay.tracks.map(track => cloneTrack(track, routes[track.id])), beats: [{t: 0, title: 'Snap', description: 'Release on rhythm and confirm the shell.', focus: ['qb']}, {t: .4, title: spec.read, description: 'Read leverage, then throw the best window.', focus: spec.focus}], summary: spec.summary};
+  return {...seededPlay, id: `starter-${index + 1}`, name: spec.name, concept: spec.name, defenseLook: spec.look, tags: ['starter', spec.name.toLowerCase(), spec.variant], notes: `${spec.name} (${spec.variant}) versus ${spec.look}.`, tracks: seededPlay.tracks.map(track => cloneTrack(track, routes[track.id])), beats: [{t: 0, title: 'Snap', description: 'Release on rhythm and confirm the shell.', focus: ['qb']}, {t: .4, title: spec.read, description: 'Read leverage, then throw the best window.', focus: spec.focus}], summary: spec.summary};
 };
 
 export const starterLibrary: Play[] = specs.map(makePlay);

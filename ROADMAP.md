@@ -17,10 +17,12 @@
 - Engine determinism holds — no wall-clock or randomness anywhere in `src/engine/`. The
   React `usePlayback` rAF hook now lives in `src/components/usePlayback.ts` and calls the pure
   clock model in `src/engine/playback.ts` (D-1 fixed, Linear HJ-275).
-- Starter library: 18/18 plays pass `isValidPlay` (sweep test
-  `src/data/library/__tests__/sweep.test.ts`).
-- All Film Lab Linear issues HJ-100..HJ-112 are Done; no open tickets in the Film Lab
-  project (`docs/agents/issue-tracker.md`).
+- Starter library: 22/22 plays pass `isValidPlay` (sweep test
+  `src/data/library/__tests__/sweep.test.ts` asserts 22 — the roster now includes the
+  Fast/Tunnel Screen pairs; see D-6).
+- Film Lab v1 issues HJ-100..HJ-112 and the deploy ticket HJ-332 are Done. The v2 batch
+  (grilled 2026-08-24) is ticketed as parents HJ-334..HJ-342 — none claimed yet
+  (`docs/agents/issue-tracker.md`).
 - codebase-memory graph index for this path is current and clean.
 - Adopted upstream: harlanljones/scheme-db @ main (MIT). Its 11v11 Play model and NFL coach
   taxonomy did NOT transfer; engine mechanics (interpolate/beats/playback) and design tokens did.
@@ -207,14 +209,26 @@ Verified against `src/` on 2026-08-24; these are v1 gaps, not committed v2 scope
 | D-3 | ~~No committed rAF harness; "sustained" fps & "reference laptop" undefined~~ — **FIXED** (Linear HJ-277): `scripts/fps-harness.mjs` measures a defined 3 s/1× sustained sample via `bun run fps`; artifact `docs/evidence/fps-report.json` (59.8 fps) | | |
 | D-4 | ~~`store.error` never surfaced; export reminders not implemented~~ — **FIXED** (Linear HJ-278): `StorageAlert` renders `store.error` with `role="alert"` and a dismissible local-storage export reminder; wired into the app shell | | |
 | D-5 | ~~`validateFormation` hardcoded field bounds~~ — **FIXED** (Linear HJ-279): uses `FIELD_WIDTH`/`FIELD_DEPTH` from `src/engine/geometry.ts`; no literal dimensions remain in `validate.ts` | | |
-| D-6 | Starter roster omits screens the plan listed; reviewer N/A | library/index.ts vs M3 text | parked under P-C (library growth); requires a D2-style roster review |
+| D-6 | ~~Starter roster omits screens the plan listed; reviewer N/A~~ — **RESOLVED in code**: Fast Screen ×2 and Tunnel Screen ×2 are present and the sweep test asserts 22 plays; the M3 "screens omitted" note is historical | library/index.ts + sweep.test.ts | roster visuals get a sanity pass inside HJ-334 (rusher-depth shift) |
 | D-7 | ~~`.thumb-field{height:100%}` inside auto-height grid rows → percentage-height feedback loop; thumbnails rendered ~1148 px, overlapped neighboring cards, and intercepted pointer events (playbook card buttons unclickable by mouse)~~ — **FIXED** (Linear HJ-332): `height:auto`; SVG now sizes from its viewBox ratio (~358 px); verified by post-deploy browser smoke | deployed origin + local preview, 2026-08-24 | jsdom e2e cannot catch layout bugs — future UI regressions need a headless-browser pass |
 
-## Next — v2 decision gate (P-B committed 2026-08-24)
+## Next — v2 batch (grilled & committed 2026-08-24)
 
-v1 is shipped. **The v2 direction is committed: P-B — Film-room depth** (decision gate Q2,
-Linear HJ-280). No v2 implementation ticket IDs exist yet; scope decomposes via the issue
-tracker before work starts. Backend/accounts/sync stay out of scope regardless (AGENTS.md).
+v1 is shipped. The v2 direction was re-baselined in a grilling session (2026-08-24):
+
+- **P-B "Film-room depth" is DELIVERED** — scripted sequences (`useSequencePlayback`),
+  side-by-side compare (`CompareView`), slow-mo (.25–1.5×), and branch-to-beat are all in
+  the shipped build; no remainder parent exists.
+- **Committed v2 batch** (parents HJ-334..HJ-342; trial-blocking vs post-trial noted per
+  ticket): rule-model corrections (rusher depth ≥7 yd fix + non-blocking warning + drill-
+  field relabel, HJ-334) · schema v4 bundled migration per `docs/adr/0001` (HJ-335) ·
+  My-assignments mode (HJ-336) · Practice Script builder (HJ-337) · beat-description
+  display (HJ-342); post-trial: quiz (HJ-338), wristband cards (HJ-339), tag presets
+  (HJ-340), Concept/Look switcher (HJ-341). Blocking relations mirror wave order W-a..W-d.
+- Domain language now lives in `CONTEXT.md` (Play, Concept, Look, Assignment, Beat,
+  Drill Field, Practice Script).
+
+Backend/accounts/sync stay out of scope regardless (AGENTS.md).
 
 Distribution note (U4, 2026-08-24): the app additionally deploys as a **static site on
 Cloudflare Workers** (`bun run deploy`, Workers Static Assets serving `dist/`). This is

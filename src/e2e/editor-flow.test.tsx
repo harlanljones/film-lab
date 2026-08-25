@@ -64,7 +64,7 @@ describe('editor browser-style flow', () => {
   });
 
   it('plays an ordered sequence in Film Room', async () => {
-    const stored = { schemaVersion: 3, plays: [starterPlay('seq-a', 'Sequence A'), starterPlay('seq-b', 'Sequence B')], sequence: ['seq-b', 'seq-a'] };
+    const stored = { schemaVersion: 4, plays: [starterPlay('seq-a', 'Sequence A'), starterPlay('seq-b', 'Sequence B')], sequence: [{ playId: 'seq-b' }, { playId: 'seq-a' }], roster: [] };
     localStorage.setItem('film-lab.playbook', JSON.stringify(stored));
     await renderApp();
     expect(document.querySelector('#film-room h2')?.textContent).toBe('Sequence B');
@@ -85,9 +85,9 @@ describe('editor browser-style flow', () => {
     const entries = Array.from(document.querySelectorAll('[aria-label="Sequence plays"] li')).map((li) => li.textContent?.split('↑')[0]);
     expect(entries).toEqual(['Shallow', 'Mesh']);
     const stored = JSON.parse(localStorage.getItem('film-lab.playbook')!);
-    expect(stored.sequence).toEqual(['starter-3', 'starter-1']);
+    expect(stored.sequence).toEqual([{ playId: 'starter-3' }, { playId: 'starter-1' }]);
     await click(Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Remove Shallow from sequence')!);
-    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual(['starter-1']);
+    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual([{ playId: 'starter-1' }]);
   });
 
   it('groups: assigns a group tag, persists it across refresh, and filters by it', async () => {
