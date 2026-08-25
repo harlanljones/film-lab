@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { activeBeatIndex } from '../engine/beats';
 import { usePlayback, formatTimecode } from './usePlayback';
 import { seededPlay } from '../data/seededPlay';
+import { starterLibrary } from '../data/library';
+import { findLooksForConcept } from '../data/conceptHelpers';
 import { usePlaybook } from '../storage/playbookStore';
 import { Field7 } from './Field7';
 import { resolveAssignment } from '../engine/assignments';
@@ -10,11 +12,19 @@ import { useSelection } from './SelectionContext';
 export function CompareView() {
   const store = usePlaybook();
   const selection = useSelection();
-  const plays = store.plays.length ? store.plays : [seededPlay];
+  const allPlays = useMemo(() => {
+    const byId = new Map(starterLibrary.map((play) => [play.id, play] as const));
+    for (const play of store.plays) byId.set(play.id, play);
+    const combined = [...byId.values()];
+    return combined.length ? combined : [seededPlay];
+  }, [store.plays]);
+  const plays = allPlays;
   const [leftId, setLeftId] = useState(() => plays[0]?.id ?? '');
   const [rightId, setRightId] = useState(() => plays[1]?.id ?? plays[0]?.id ?? '');
   const left = plays.find((play) => play.id === leftId) ?? plays[0];
   const right = plays.find((play) => play.id === rightId) ?? plays[0] ?? left;
+  const leftLooks = useMemo(() => findLooksForConcept(plays, left?.concept), [left?.concept, plays]);
+  const rightLooks = useMemo(() => findLooksForConcept(plays, right?.concept), [plays, right?.concept]);
   const player = useMemo(() => store.roster.find((candidate) => candidate.id === selection.playerId) ?? null, [selection.playerId, store.roster]);
   const leftTrackId = player && left ? resolveAssignment(left, player)?.trackId ?? null : null;
   const rightTrackId = player && right ? resolveAssignment(right, player)?.trackId ?? null : null;
@@ -29,6 +39,10 @@ export function CompareView() {
       <label>Left play <select aria-label="Left play to compare" value={leftId} onChange={(event) => setLeftId(event.target.value)}>{selectOptions}</select></label>
       <label>Right play <select aria-label="Right play to compare" value={rightId} onChange={(event) => setRightId(event.target.value)}>{selectOptions}</select></label>
     </div>
+    {(leftLooks.length > 1 || rightLooks.length > 1) && <div className="controls" role="group" aria-label="Switch defensive look for same concept in compare">
+      {leftLooks.length > 1 && <div role="group" aria-label="Left play defensive look options"><span>Left: {left?.concept} — </span>{leftLooks.map((sibling) => <button key={sibling.id} type="button" aria-label={`Switch left to ${sibling.defenseLook} look`} aria-pressed={sibling.id === left?.id} onClick={() => setLeftId(sibling.id)}>{sibling.defenseLook}</button>)}</div>}
+      {rightLooks.length > 1 && <div role="group" aria-label="Right play defensive look options"><span>Right: {right?.concept} — </span>{rightLooks.map((sibling) => <button key={sibling.id} type="button" aria-label={`Switch right to ${sibling.defenseLook} look`} aria-pressed={sibling.id === right?.id} onClick={() => setRightId(sibling.id)}>{sibling.defenseLook}</button>)}</div>}
+    </div>}
     {player && <p role="status" aria-label="Following player">{player.name}'s view highlighted on both fields.</p>}
     <div className="compare-fields">
       <div><Field7 tracks={left?.tracks ?? []} time={playback.t} highlightTrackIds={leftTrackId ? [leftTrackId] : undefined} aria-label={`${left?.name} comparison drill field`} /><p>{left?.name} · {leftBeat?.title ?? 'Before snap'}{leftBeat?.description ? ` · ${leftBeat.description}` : ''}</p></div>
