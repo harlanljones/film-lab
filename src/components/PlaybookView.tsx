@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { exportPlaybook, importPlaybook, planImport, usePlaybook, type ImportBucket, type ImportCandidate, type ImportPlan } from '../storage/playbookStore';
+import { SITUATION_PRESETS } from '../data/situationPresets';
 import { starterLibrary } from '../data/library';
 import type { Play } from '../engine/types';
 import { Field7 } from './Field7';
@@ -23,6 +24,7 @@ export function PlaybookView() {
   const [look, setLook] = useState('all');
   const [tag, setTag] = useState('all');
   const [group, setGroup] = useState('all');
+  const [situationFilters, setSituationFilters] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>('name');
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<ImportPlan | null>(null);
@@ -54,10 +56,12 @@ export function PlaybookView() {
     tags: [...new Set(plays.flatMap((play) => play.tags))].sort(),
     groups: [...new Set(plays.flatMap(groupsOf))].sort(),
   }), [plays]);
+  const toggleSituationFilter = (preset: string) =>
+    setSituationFilters((current) => (current.includes(preset) ? current.filter((value) => value !== preset) : [...current, preset]));
   const filtered = useMemo(() => plays.filter((play) => {
     const text = `${play.name} ${play.category} ${play.defenseLook} ${play.tags.join(' ')}`.toLowerCase();
-    return text.includes(query.toLowerCase()) && (category === 'all' || play.category === category) && (look === 'all' || play.defenseLook === look) && (tag === 'all' || play.tags.includes(tag)) && (group === 'all' || groupsOf(play).includes(group));
-  }).sort((a, b) => a[sort].localeCompare(b[sort]) || a.name.localeCompare(b.name) || a.id.localeCompare(b.id)), [category, group, look, plays, query, sort, tag]);
+    return text.includes(query.toLowerCase()) && (category === 'all' || play.category === category) && (look === 'all' || play.defenseLook === look) && (tag === 'all' || play.tags.includes(tag)) && (group === 'all' || groupsOf(play).includes(group)) && (situationFilters.length === 0 || situationFilters.some((tag) => play.tags.includes(tag)));
+  }).sort((a, b) => a[sort].localeCompare(b[sort]) || a.name.localeCompare(b.name) || a.id.localeCompare(b.id)), [category, group, look, plays, query, situationFilters, sort, tag]);
   const download = (content: string, name: string) => {
     const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url);
@@ -123,6 +127,7 @@ export function PlaybookView() {
       <label>Group <select aria-label="Filter by group" value={group} onChange={(event) => setGroup(event.target.value)}><option value="all">All groups</option>{options.groups.map((value) => <option key={value}>{value}</option>)}</select></label>
       <label>Sort <select aria-label="Sort plays" value={sort} onChange={(event) => setSort(event.target.value as SortKey)}><option value="name">Name</option><option value="defenseLook">Defense</option><option value="category">Category</option></select></label>
     </div>
+    <div className="chip-row" role="group" aria-label="Filter by situational tags">{SITUATION_PRESETS.map((preset) => <button key={preset} type="button" className="chip" aria-pressed={situationFilters.includes(preset)} aria-label={`Filter by situational tag ${preset}`} onClick={() => toggleSituationFilter(preset)}>{preset}</button>)}{situationFilters.length > 0 && <button type="button" aria-label="Clear situational filters" onClick={() => setSituationFilters([])}>Clear</button>}</div>
     <div className="controls">
       <button onClick={() => download(exportPlaybook(filtered), 'film-lab-playbook.json')}>Export filtered ({filtered.length})</button>
       <button onClick={() => fileInput.current?.click()}>Import JSON</button>
