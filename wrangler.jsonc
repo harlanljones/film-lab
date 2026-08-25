@@ -1,0 +1,11 @@
+// Film Lab — static hosting only (ROADMAP U4, Linear HJ-332).
+// Serves the Vite build via Workers Static Assets; no Worker code, no server-side storage.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "film-lab",
+  "compatibility_date": "2026-08-24",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

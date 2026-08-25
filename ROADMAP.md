@@ -49,6 +49,7 @@ matrix · native mobile · multi-league rule engines.
 | U1 | Undo depth | **Last-snapshot restore** — implemented as `undoSnapshot` in `src/engine/editor.ts`, covered by editor tests | D1 |
 | U2 | Share via URL hash vs file-only export | **URL hash plus validated JSON fallback** — `src/storage/share.ts`, covered by `share.test.ts` | D3 |
 | U3 | Coach reviewer availability for starter plays | Roster approved; **reviewer recorded as N/A per user direction** (Linear HJ-108) | D2 |
+| U4 | Distribution host (2026-08-24, Linear HJ-332) | **Cloudflare Workers Static Assets, hosting only** — the built SPA is served from a Worker; playbook persistence stays localStorage; no backend app code, accounts, or sync; `wrangler` is dev tooling, not an app dependency | supports Q1 season trial |
 
 ## Metrics
 
@@ -207,12 +208,18 @@ Verified against `src/` on 2026-08-24; these are v1 gaps, not committed v2 scope
 | D-4 | ~~`store.error` never surfaced; export reminders not implemented~~ — **FIXED** (Linear HJ-278): `StorageAlert` renders `store.error` with `role="alert"` and a dismissible local-storage export reminder; wired into the app shell | | |
 | D-5 | ~~`validateFormation` hardcoded field bounds~~ — **FIXED** (Linear HJ-279): uses `FIELD_WIDTH`/`FIELD_DEPTH` from `src/engine/geometry.ts`; no literal dimensions remain in `validate.ts` | | |
 | D-6 | Starter roster omits screens the plan listed; reviewer N/A | library/index.ts vs M3 text | parked under P-C (library growth); requires a D2-style roster review |
+| D-7 | ~~`.thumb-field{height:100%}` inside auto-height grid rows → percentage-height feedback loop; thumbnails rendered ~1148 px, overlapped neighboring cards, and intercepted pointer events (playbook card buttons unclickable by mouse)~~ — **FIXED** (Linear HJ-332): `height:auto`; SVG now sizes from its viewBox ratio (~358 px); verified by post-deploy browser smoke | deployed origin + local preview, 2026-08-24 | jsdom e2e cannot catch layout bugs — future UI regressions need a headless-browser pass |
 
 ## Next — v2 decision gate (P-B committed 2026-08-24)
 
 v1 is shipped. **The v2 direction is committed: P-B — Film-room depth** (decision gate Q2,
 Linear HJ-280). No v2 implementation ticket IDs exist yet; scope decomposes via the issue
 tracker before work starts. Backend/accounts/sync stay out of scope regardless (AGENTS.md).
+
+Distribution note (U4, 2026-08-24): the app additionally deploys as a **static site on
+Cloudflare Workers** (`bun run deploy`, Workers Static Assets serving `dist/`). This is
+hosting only — the local-first storage model is unchanged and no backend feature scope was
+added; see the U4 decision row above.
 
 Open questions:
 

@@ -9,7 +9,10 @@ Instructions for development agents. Precedence: direct user instruction > this 
   github.com/harlanljones/scheme-db (MIT; retain attribution in ported files).
 - In scope: flag 7v7 play modeling, play Editor, film-room playback, playbook management,
   JSON export/import.
-- Out of scope: servers, accounts, sync, NFL content, native mobile. Do not add backend deps.
+- Out of scope: servers, accounts, sync, NFL content, native mobile. Do not add backend app deps.
+  Exception (ROADMAP U4): static-asset hosting on Cloudflare Workers is in-scope
+  distribution — `wrangler.jsonc` serves the built `dist/`; no Worker code and no
+  server-side storage.
 - ENGINE PURITY: `src/engine/` stays framework-free pure TypeScript — no React, no DOM,
   no `Date.now()`/`Math.random()`. Views consume engine results; engine never imports views.
   The React `usePlayback` rAF hook lives in `src/components/usePlayback.ts`, which calls the
@@ -50,6 +53,7 @@ Verified at M0 and re-confirmed post-ship; correct this table if they ever diffe
 | Build | `bun run build` |
 | Preview | `bun run preview` |
 | FPS gate | `bun run fps` (builds + measures sustained playback; artifact `docs/evidence/fps-report.json`) |
+| Deploy | `bun run deploy` (Workers Static Assets; requires Cloudflare auth — ROADMAP U4) |
 
 ## Quality Gates (all pass before integrating any wave)
 

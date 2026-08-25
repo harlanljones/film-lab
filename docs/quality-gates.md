@@ -32,4 +32,11 @@ Lighthouse accessibility scored 0.95 (95/100) against the local production serve
 - A repeatable playback fps harness (`bun run fps`, `scripts/fps-harness.mjs`) measured a 3-second
   1× sustained sample: 180 frames over 3,010.5 ms ≈ **59.8 fps** (artifact `docs/evidence/fps-report.json`).
   An earlier manual one-second sample recorded 61 rAF callbacks over 1,010.6 ms (~60.4 fps).
+  Re-run 2026-08-24 after the `.thumb-field` fix (Linear HJ-332): **60 fps** (181 frames),
+  bundle 70.7 kB JS / 1.3 kB CSS gzip — within the D1 budget; artifact refreshed.
+- Production deploy (2026-08-24, Linear HJ-332): `bun run deploy` publishes `dist/` via
+  Workers Static Assets to `https://film-lab.harlanljones.workers.dev`. Post-deploy headless
+  browser smoke on the deployed origin: app boot, starter library, localStorage
+  write→reload persistence, clipboard share-link → fresh-profile import, film-room playback,
+  zero console errors — all pass.
 - Pointer editing, keyboard marker selection, save/reload persistence, playback controls, and invalid-edit recovery are covered by `src/e2e/editor-flow.test.tsx`.
