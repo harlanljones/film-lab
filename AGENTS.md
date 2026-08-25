@@ -12,6 +12,9 @@ Instructions for development agents. Precedence: direct user instruction > this 
 - Out of scope: servers, accounts, sync, NFL content, native mobile. Do not add backend deps.
 - ENGINE PURITY: `src/engine/` stays framework-free pure TypeScript — no React, no DOM,
   no `Date.now()`/`Math.random()`. Views consume engine results; engine never imports views.
+  The React `usePlayback` rAF hook lives in `src/components/usePlayback.ts`, which calls the
+  pure clock model in `src/engine/playback.ts` (ROADMAP D-1 resolved). New engine code must
+  stay pure.
 - Field space: x ∈ [0, 40] yards wide, y = 0 at LOS, y negative toward offensive backfield.
   Dimensions live only in `src/engine/geometry.ts` constants — never hardcode in views.
 
@@ -21,25 +24,32 @@ Instructions for development agents. Precedence: direct user instruction > this 
 |---|---|
 | `src/engine/*` | data model, interpolation, beats, playback, validation, geometry |
 | `src/data/formations.ts` | offense/defense formation templates |
+| `src/data/seededPlay.ts` | seed-play factory reused by library and editor tests |
 | `src/data/library/*` | starter plays — edit ONLY with library sweep rerun |
 | `src/storage/*` | persistence, versioned schema, migrations, import/export |
-| `src/components/*` | reusable SVG/UI primitives (Field7, PlayerMarker, Trail, PlaybackDeck) |
-| `src/views/*` | EditorView, FilmRoomView, PlaybookView |
+| `src/components/*` | views + primitives (no `src/views/`): Field7 (Field/PlayerMarker/Trail in one SVG file), EditorView, FilmRoom (playback deck + clock), PlaybookView, ErrorBoundary |
+| `src/e2e/*` | scripted editor end-to-end flow (`editor-flow.test.tsx`) |
 
 One writer per file/component at a time.
 
-## Commands — verified at M0
+Ticket tracking: Linear, team `HJ`, project `Film Lab` — see `docs/agents/issue-tracker.md`.
+Pick the open ticket with the lowest number and claim it (`--assignee self`) before starting.
 
-Verify against `package.json` at M0 and correct this table if they differ.
+## Commands — verified 2026-08-24 against `package.json`
+
+Verified at M0 and re-confirmed post-ship; correct this table if they ever differ.
 
 | Purpose | Command |
 |---|---|
 | Install | `bun install` |
 | Dev server | `bun run dev` |
 | Tests | `bun run test` |
+| E2E | `bun run test:e2e` |
 | Typecheck | `bun run typecheck` |
 | Lint | `bun run lint` |
 | Build | `bun run build` |
+| Preview | `bun run preview` |
+| FPS gate | `bun run fps` (builds + measures sustained playback; artifact `docs/evidence/fps-report.json`) |
 
 ## Quality Gates (all pass before integrating any wave)
 
@@ -52,6 +62,10 @@ Verify against `package.json` at M0 and correct this table if they differ.
    core actions keyboard-reachable.
 6. No secrets in the repo (local-only app: none expected — keep it that way).
 7. Ported upstream files keep MIT attribution headers.
+8. Ship browser gates: Lighthouse a11y ≥ 95, sustained playback ≥ 55 fps, bundle within the
+   D1 budget — evidence recorded in `docs/quality-gates.md` (current: 95/100, ~60 fps,
+   70.00 kB gzip). Re-run these before any ship-level change lands. FPS is measured by
+   `bun run fps` (3 s/1× sustained sample, `docs/evidence/fps-report.json`).
 
 ## Prohibited Shortcuts
 
@@ -72,4 +86,5 @@ Verify against `package.json` at M0 and correct this table if they differ.
 ## Escalate to the user when
 
 A command-table entry fails post-M0 · validation rules conflict with real flag rules ·
-editor interaction model needs redesign (Gate D1) · storage quota/eviction observed.
+editor interaction model redesign is requested (v1 model is shipped; redesign is a v2 decision gate) ·
+storage quota/eviction observed.

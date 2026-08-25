@@ -62,4 +62,56 @@ describe('editor browser-style flow', () => {
     expect(document.querySelector('#editor [role="alert"]')?.textContent ?? '').toContain('outside the field');
     expect(Array.from(document.querySelectorAll('#editor button')).find((button) => button.textContent === 'Save play')).toHaveProperty('disabled', true);
   });
+
+  it('plays an ordered sequence in Film Room', async () => {
+    const stored = { schemaVersion: 3, plays: [starterPlay('seq-a', 'Sequence A'), starterPlay('seq-b', 'Sequence B')], sequence: ['seq-b', 'seq-a'] };
+    localStorage.setItem('film-lab.playbook', JSON.stringify(stored));
+    await renderApp();
+    expect(document.querySelector('#film-room h2')?.textContent).toBe('Sequence B');
+    expect(document.querySelector('[aria-label="Sequence position"]')?.textContent).toBe('1 of 2');
+    await act(async () => { root.unmount(); await flush(); });
+    await renderApp();
+    expect(document.querySelector('#film-room h2')?.textContent).toBe('Sequence B');
+  });
+
+  it('authoring: adds, reorders, and removes plays in the sequence, then plays it', async () => {
+    await renderApp();
+    const addA = Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Add Mesh to sequence');
+    const addB = Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Add Shallow to sequence');
+    expect(addA).toBeDefined();
+    await click(addA!);
+    await click(addB!);
+    await click(Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Move Shallow earlier in sequence')!);
+    const entries = Array.from(document.querySelectorAll('[aria-label="Sequence plays"] li')).map((li) => li.textContent?.split('↑')[0]);
+    expect(entries).toEqual(['Shallow', 'Mesh']);
+    const stored = JSON.parse(localStorage.getItem('film-lab.playbook')!);
+    expect(stored.sequence).toEqual(['starter-3', 'starter-1']);
+    await click(Array.from(document.querySelectorAll('#playbook button')).find((button) => button.getAttribute('aria-label') === 'Remove Shallow from sequence')!);
+    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual(['starter-1']);
+  });
+
+  it('compare: renders two plays on a shared clock with synced timeline', async () => {
+    await renderApp();
+    const selects = Array.from(document.querySelectorAll('#compare select'));
+    expect(selects).toHaveLength(2);
+    await change(selects[1] as HTMLSelectElement, 'starter-2');
+    const fields = document.querySelectorAll('#compare svg.field');
+    expect(fields).toHaveLength(2);
+    const timeline = document.querySelector('#compare input[aria-label="Comparison timeline"]') as HTMLInputElement;
+    await act(async () => { const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(timeline), 'value')?.set; setter?.call(timeline, '0.5'); dispatch(timeline, new Event('input', { bubbles: true })); dispatch(timeline, new Event('change', { bubbles: true })); await flush(); });
+    expect(document.querySelector('#compare [aria-live="polite"]')?.textContent).toContain('0:00.5');
+  });
+
+  it('speed and branch: sets playback rate and replays from a beat', async () => {
+    await renderApp();
+    await click(Array.from(document.querySelectorAll('#film-room button')).find((button) => button.getAttribute('aria-label') === 'Playback speed 0.5×')!);
+    expect(Array.from(document.querySelectorAll('#film-room button')).find((button) => button.getAttribute('aria-label') === 'Playback speed 0.5×')?.getAttribute('aria-pressed')).toBe('true');
+    await click(Array.from(document.querySelectorAll('#film-room button')).find((button) => button.getAttribute('aria-label') === 'Branch to Crossers')!);
+    const timeline = document.querySelector('#film-room input[aria-label="Playback timeline"]') as HTMLInputElement;
+    expect(Number(timeline.value)).toBeCloseTo(.45, 1);
+  });
 });
+
+function starterPlay(id: string, name: string) {
+  return { id, name, duration: 1, category: 'pass', defenseLook: 'Cover 2', tags: [], notes: '', tracks: [], beats: [{ t: 0, title: 'Snap', focus: ['qb'] }], summary: { motive: '', keyDefender: '', whyItWorks: '', counter: '' } };
+}

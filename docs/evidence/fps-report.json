@@ -1,0 +1,11 @@
+{
+  "measuredAt": "2026-08-25T00:29:30.988Z",
+  "sustainedMs": 3000,
+  "speed": "1x",
+  "frames": 180,
+  "elapsedMs": 3015.2999999970198,
+  "fps": 59.7,
+  "minFps": 55,
+  "pass": true,
+  "machine": "linux/x64 "
+}

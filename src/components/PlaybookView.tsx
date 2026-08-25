@@ -74,6 +74,18 @@ export function PlaybookView() {
     if (deleteId !== play.id) { setDeleteId(play.id); return; }
     store.remove(play.id); setHiddenIds((ids) => ids.includes(play.id) ? ids : [...ids, play.id]); setDeleteId(null);
   };
+  const byId = useMemo(() => new Map(plays.map((play) => [play.id, play])), [plays]);
+  const sequencePlays = store.sequence.map((id) => byId.get(id)).filter((play): play is Play => Boolean(play));
+  const inSequence = (id: string) => store.sequence.includes(id);
+  const addToSequence = (play: Play) => store.setSequence(inSequence(play.id) ? store.sequence : [...store.sequence, play.id]);
+  const removeFromSequence = (id: string) => store.setSequence(store.sequence.filter((playId) => playId !== id));
+  const moveSequence = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= store.sequence.length) return;
+    const next = [...store.sequence];
+    [next[index], next[target]] = [next[target], next[index]];
+    store.setSequence(next);
+  };
   return <section aria-label="Playbook">
     <h2>Playbook</h2>
     <div className="controls playbook-filters">
@@ -91,6 +103,7 @@ export function PlaybookView() {
     {error && <p role="alert">{error}</p>}
     {shareMessage && <p role="status">{shareMessage}</p>}
     {preview && <aside role="dialog" aria-label="Import preview"><h3>Import preview</h3><p>{preview.length} valid plays ready to import.</p><div className="controls"><button onClick={() => { store.save(preview); setPreview(null); }}>Replace playbook</button><button onClick={() => { store.save(importPlaybook(exportPlaybook(preview), store.plays)); setPreview(null); }}>Merge with playbook</button><button onClick={() => setPreview(null)}>Cancel</button></div></aside>}
-    {filtered.length === 0 ? <p role="status">No plays match these filters. Try clearing the search or filters.</p> : <div className="cards">{filtered.map((play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><h3>{play.name}</h3><p>{play.category} · {play.defenseLook}</p><p>{play.tags.join(' · ')}</p><div className="controls"><a href="#editor" onClick={() => store.select(play)}>Open in Editor</a><a href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button onClick={() => share(play)}>Share link</button><button onClick={() => rename(play)}>Rename</button><button onClick={() => duplicate(play)}>Duplicate</button><button onClick={() => download(exportPlaybook([play]), `${play.id}.json`)}>Export</button><button onClick={() => remove(play)}>{deleteId === play.id ? 'Confirm delete' : 'Delete'}</button></div></article>)}</div>}
+    <aside aria-label="Film sequence editor"><h3>Film sequence</h3>{sequencePlays.length === 0 ? <p role="status">No plays in the sequence. Add plays below to build a scripted Film Room session.</p> : <ol aria-label="Sequence plays">{sequencePlays.map((play, index) => <li key={play.id}>{play.name}<div className="controls"><button aria-label={`Move ${play.name} earlier in sequence`} onClick={() => moveSequence(index, -1)} disabled={index === 0}>↑</button><button aria-label={`Move ${play.name} later in sequence`} onClick={() => moveSequence(index, 1)} disabled={index === sequencePlays.length - 1}>↓</button><button aria-label={`Remove ${play.name} from sequence`} onClick={() => removeFromSequence(play.id)}>Remove</button></div></li>)}</ol>}<div className="controls"><button aria-label="Clear the film sequence" onClick={() => store.setSequence([])}>Clear sequence</button><a href="#film-room" aria-label="Watch the sequence in Film Room">Watch sequence in Film Room</a></div></aside>
+    {filtered.length === 0 ? <p role="status">No plays match these filters. Try clearing the search or filters.</p> : <div className="cards">{filtered.map((play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><h3>{play.name}</h3><p>{play.category} · {play.defenseLook}</p><p>{play.tags.join(' · ')}</p><div className="controls"><a href="#editor" onClick={() => store.select(play)}>Open in Editor</a><a href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button onClick={() => share(play)}>Share link</button><button onClick={() => rename(play)}>Rename</button><button onClick={() => duplicate(play)}>Duplicate</button><button onClick={() => download(exportPlaybook([play]), `${play.id}.json`)}>Export</button><button aria-pressed={inSequence(play.id)} aria-label={inSequence(play.id) ? `Remove ${play.name} from sequence` : `Add ${play.name} to sequence`} onClick={() => addToSequence(play)}>{inSequence(play.id) ? 'In sequence' : 'Add to sequence'}</button><button onClick={() => remove(play)}>{deleteId === play.id ? 'Confirm delete' : 'Delete'}</button></div></article>)}</div>}
   </section>;
 }
