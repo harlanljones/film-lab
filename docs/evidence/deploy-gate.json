@@ -1,12 +1,12 @@
 {
-  "startedAt": "2026-08-25T23:46:56.008Z",
-  "url": "https://film-lab.harlanljones.workers.dev",
+  "startedAt": "2026-08-25T23:59:03.094Z",
+  "url": "https://film-lab.harlanljones.com",
   "sha": "?",
   "checks": {
     "html_serves": {
       "ok": true,
       "status": 200,
-      "elapsedMs": 174,
+      "elapsedMs": 154,
       "isApp": true,
       "isBlockPage": false
     },

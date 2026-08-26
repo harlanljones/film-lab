@@ -133,6 +133,10 @@ jobs:
         run: npm install -g lighthouse
       - name: Run post-deploy verification
         run: |
-          # Wait for CF propagation (10s)
+          # Verify the exact deploy we just pushed. Use the workers.dev URL for the gate:
+          # Cloudflare's Bot Fight Mode / zone security returns a 403 challenge to the
+          # GitHub Actions datacenter egress IP on the custom domain (real browsers are
+          # unaffected, verified locally). workers.dev serves the identical build and is
+          # not challenged. Wait for CF propagation, then verify.
           sleep 10
-          bun run deploy:verify --url https://film-lab.harlanljones.com --headless
+          bun run deploy:verify --url https://film-lab.harlanljones.workers.dev --headless

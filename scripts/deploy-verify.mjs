@@ -57,6 +57,17 @@ function shortSha() {
 
 function nowUtc() { return new Date().toISOString(); }
 
+/**
+ * The bundle-size and secrets checks read the local dist/. In CI the post-deploy
+ * job does not build before running the gate, so build on demand if dist/ is
+ * missing rather than crashing on ENOENT. No-op when dist/ already exists.
+ */
+function ensureDist() {
+  if (existsSync('dist/assets') && readdirSync('dist/assets').some((f) => f.endsWith('.js'))) return;
+  console.log('dist/ not found — building once so bundle + secrets checks can run.');
+  spawnSync('bun', ['run', 'build'], { stdio: 'inherit' });
+}
+
 // ── Checks ────────────────────────────────────────────────────────────────────
 
 const BUDGET_KB_GZIP = { js: 90, css: 3 }; // Matches scripts/fps-harness.mjs re-baseline
@@ -242,6 +253,8 @@ async function main() {
 
   const checks = [];
   const url_ = url.replace(/\/+$/, '');
+
+  ensureDist();
 
   // 1. HTML serves
   checks.push(await checkHtmlServes(url_));
