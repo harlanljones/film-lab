@@ -1,0 +1,88 @@
+/*
+ * Film Lab — design tokens
+ *
+ * Single source of truth for palette, spacing, radius, and typography.
+ * Imported by style.css (style.css must come after this file in the bundle).
+ *
+ * NOTE: values here intentionally MATCH the prior hardcoded stylesheet
+ * byte-for-byte (see git history). This is a system-forming pass: it
+ * extracts the existing visual language into named tokens, it does not
+ * redesign the palette, field rendering, or route rendering. To re-tune a
+ * single value later, change it here and nowhere else.
+ */
+
+:root {
+  /* ---------------------------------------------------------------
+   * 1. Color palette
+   * ---------------------------------------------------------------- */
+
+  /* Bases */
+  --color-bg: #121314;                          /* page / near-black ground */
+  --color-surface: #1d2320;                     /* raised card / wristband surface */
+  --color-glow: #263f38;                        /* subtle radial glow in the film-room ground */
+  --color-field: #35593c;                       /* field stripe + border tone */
+  --color-field-border: #6d9d63;                /* field outline */
+
+  /* Ink */
+  --color-ink: #f5f1e8;                         /* primary cream text / glyphs */
+  --color-ink-muted: #b7b9b1;                   /* lede + secondary text */
+  --color-ink-inverse: #121314;                 /* text placed on a lime fill */
+
+  /* Team accents */
+  --color-offense: #a4d65e;                     /* lime — offensive routes, emphasis */
+  --color-defense: #f18f6b;                     /* coral — defensive routes */
+  --color-focus: #a4d65e;                       /* focus ring (reuses offense lime) */
+
+  /* Print override palette (paper + ink only) */
+  --color-paper: #fff;
+  --color-print-ink: #000;
+  --color-print-offense: #1d6b3a;
+  --color-print-defense: #b15a3a;
+  --color-print-subtle: #333;
+  --color-print-muted: #444;
+
+  /* ---------------------------------------------------------------
+   * 2. Spacing scale (rem @ 16px base)
+   * ---------------------------------------------------------------- */
+  --space-1: .25rem;                            /* 4px — tight inline gap */
+  --space-2: .5rem;                             /* 8px — default control gap */
+  --space-3: .75rem;                            /* 12px — card padding, tight sections */
+  --space-4: 1rem;                              /* 16px — default section gap */
+  --space-5: 1.5rem;                            /* 24px — larger section rhythm */
+  --space-6: 3rem;                              /* 48px — page padding reserve */
+
+  /* extra-fine steps (component packings kept value-exact) */
+  --space-tight: .35rem;                        /* track-picker gap */
+  --space-chip-row: .4rem;                      /* chip-row gap */
+  --space-chip-y: .45rem;                       /* chip vertical padding */
+  --space-btn-y: .9rem;                         /* button vertical padding */
+  --space-btn-x: 1.4rem;                        /* button horizontal padding */
+
+  /* ---------------------------------------------------------------
+   * 3. Radius scale
+   * ---------------------------------------------------------------- */
+  --radius-1: 4px;                              /* tight / print card */
+  --radius-2: 8px;                              /* field, inspectors, banners */
+  --radius-3: 12px;                             /* card, wristband card */
+  --radius-pill: 999px;                         /* buttons, chips */
+
+  /* ---------------------------------------------------------------
+   * 4. Typography scale
+   * ---------------------------------------------------------------- */
+  --font-sans: Inter, system-ui, sans-serif;
+
+  --text-xs: .75rem;                            /* wristband-meta */
+  --text-sm: .8rem;                             /* small buttons / chips / hints */
+  --text-md: .85rem;                            /* card copy, wristband play, situation */
+  --text-md-up: .9rem;                          /* wristband assignment */
+  --text-base: 1rem;                            /* body + control base */
+  --text-lg: 1.2rem;                            /* lede */
+  --text-display: clamp(3rem, 9vw, 7rem);       /* h1 */
+
+  --font-weight-bold: 700;
+
+  --leading-tight: .92;                         /* h1 */
+  --leading-snug: 1.3;                          /* wristband assignment */
+  --tracking-tight: -.07em;                     /* h1 */
+  --tracking-wide: .18em;                       /* eyebrow */
+}

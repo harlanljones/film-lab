@@ -14,11 +14,11 @@ export function FilmRoom() {
   const store = usePlaybook();
   const selection = useSelection();
   const play = resolveSelectedPlay(store.plays, store.selectedPlayId, seededPlay);
-  const sequence = useMemo(() => {
+  const { sequence, reps } = useMemo(() => {
     const resolved = resolveSequence(store.plays, store.sequence);
-    return resolved.length ? resolved : [play];
+    return resolved.playlist.length ? { sequence: resolved.playlist, reps: resolved.reps } : { sequence: [play], reps: [1] };
   }, [store.plays, store.sequence, play]);
-  const playback = useSequencePlayback(sequence);
+  const playback = useSequencePlayback(sequence, reps);
   const current = sequence[Math.min(playback.index, sequence.length - 1)] ?? play;
   const allPlays = useMemo(() => {
     const byId = new Map(starterLibrary.map((item) => [item.id, item] as const));

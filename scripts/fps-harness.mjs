@@ -63,6 +63,9 @@ try {
   browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto(`http://127.0.0.1:${PORT}/`);
+  // HJ-409 routed the app: the default route is now the Playbook, so sample
+  // playback on the Film Room view. Hash navigation keeps the app local-first.
+  await page.evaluate(() => { window.location.hash = '#film-room'; });
   const playButton = page.getByRole('button', { name: 'Play play' });
   await playButton.waitFor();
   await playButton.click();

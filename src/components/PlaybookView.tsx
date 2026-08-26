@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { exportPlaybook, importPlaybook, planImport, usePlaybook, type ImportBucket, type ImportCandidate, type ImportPlan } from '../storage/playbookStore';
 import { SITUATION_PRESETS } from '../data/situationPresets';
 import { starterLibrary } from '../data/library';
@@ -19,6 +19,29 @@ const entryName = (entry: ImportCandidate) => entry.bucket === 'invalid' ? (entr
 const SYSTEM_TAGS = new Set(starterLibrary.flatMap((play) => play.tags));
 const groupsOf = (play: Play) => play.tags.filter((value) => !SYSTEM_TAGS.has(value));
 
+type PlayCardMenuProps = { playName: string; onRename: () => void; onDuplicate: () => void; onExport: () => void; onRemove: () => void; deleteArmed: boolean };
+
+function PlayCardMenu({ playName, onRename, onDuplicate, onExport, onRemove, deleteArmed }: PlayCardMenuProps) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuId = useId();
+  const close = () => { setOpen(false); triggerRef.current?.focus(); };
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); triggerRef.current?.focus(); } };
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (menuRef.current && !menuRef.current.contains(target) && triggerRef.current && !triggerRef.current.contains(target)) setOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); document.removeEventListener('mousedown', onPointerDown); };
+  }, [open]);
+  useEffect(() => { if (open) menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus(); }, [open]);
+  return <div className="card-menu-wrap"><button ref={triggerRef} type="button" className="btn btn-sm btn-subtle card-menu-trigger" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-label={`Actions for ${playName}`} onClick={() => setOpen((value) => !value)}>⋮</button>{open && <div ref={menuRef} id={menuId} role="menu" aria-label={`Actions for ${playName}`} className="card-menu"><button type="button" role="menuitem" className="btn btn-sm btn-subtle" onClick={() => { onRename(); close(); }}>Rename</button><button type="button" role="menuitem" className="btn btn-sm btn-subtle" onClick={() => { onDuplicate(); close(); }}>Duplicate</button><button type="button" role="menuitem" className="btn btn-sm btn-subtle" onClick={() => { onExport(); close(); }}>Export JSON</button><button type="button" role="menuitem" className="btn btn-sm btn-danger" onClick={() => { onRemove(); if (deleteArmed) close(); else setOpen(true); }}>{deleteArmed ? 'Confirm delete' : 'Delete play'}</button></div>}</div>;
+}
+
 export function PlaybookView() {
   const store = usePlaybook();
   const [query, setQuery] = useState('');
@@ -29,6 +52,7 @@ export function PlaybookView() {
   const [situationFilters, setSituationFilters] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>('name');
   const [groupByConceptEnabled, setGroupByConceptEnabled] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const [picked, setPicked] = useState<number[]>([]);
@@ -67,7 +91,7 @@ export function PlaybookView() {
   }).sort((a, b) => a[sort].localeCompare(b[sort]) || a.name.localeCompare(b.name) || a.id.localeCompare(b.id)), [category, group, look, plays, query, situationFilters, sort, tag]);
   const grouped = useMemo(() => groupByConceptEnabled ? groupByConcept(filtered) : null, [filtered, groupByConceptEnabled]);
 
-  const renderPlayCard = (play: Play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><h3>{play.name}</h3><p>{play.category} · {play.defenseLook}</p><p>{play.tags.join(' · ')}</p><div className="controls">{groupsOf(play).map((value) => <button key={value} aria-label={`Remove ${play.name} from group ${value}`} onClick={() => removeFromGroup(play, value)}>{value} ✕</button>)}<button aria-label={`Add ${play.name} to group`} onClick={() => addToGroup(play)}>+ Group</button></div><div className="controls"><a href="#editor" onClick={() => store.select(play)}>Open in Editor</a><a href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button onClick={() => share(play)}>Share link</button><button onClick={() => rename(play)}>Rename</button><button onClick={() => duplicate(play)}>Duplicate</button><button onClick={() => download(exportPlaybook([play]), `${play.id}.json`)}>Export</button><button aria-pressed={inSequence(play.id)} aria-label={inSequence(play.id) ? `Remove ${play.name} from sequence` : `Add ${play.name} to sequence`} onClick={() => addToSequence(play)}>{inSequence(play.id) ? 'In sequence' : 'Add to sequence'}</button><button onClick={() => remove(play)}>{deleteId === play.id ? 'Confirm delete' : 'Delete'}</button></div></article>;
+  const renderPlayCard = (play: Play) => <article className="card" key={play.id}><Field7 tracks={play.tracks} className="thumb-field" aria-label={`${play.name} thumbnail`} /><PlayCardMenu playName={play.name} onRename={() => rename(play)} onDuplicate={() => duplicate(play)} onExport={() => download(exportPlaybook([play]), `${play.id}.json`)} onRemove={() => remove(play)} deleteArmed={deleteId === play.id} /><div className="card-body"><h3>{play.name}</h3><p className="card-meta">{play.category} · {play.defenseLook}</p>{play.tags.length > 0 && <p className="card-tags">{play.tags.join(' · ')}</p>}<div className="card-groups">{groupsOf(play).map((value) => <button key={value} type="button" className="btn btn-sm btn-subtle" aria-label={`Remove ${play.name} from group ${value}`} onClick={() => removeFromGroup(play, value)}>{value} ×</button>)}<button type="button" className="btn btn-sm btn-subtle" aria-label={`Add ${play.name} to group`} onClick={() => addToGroup(play)}>+ Group</button></div></div><div className="card-actions"><a className="btn btn-primary" href="#editor" onClick={() => store.select(play)}>Open in Editor</a><div className="card-secondary"><a className="btn btn-secondary" href="#film-room" onClick={() => store.select(play)}>Watch in Film Room</a><button type="button" className="btn btn-secondary" aria-pressed={inSequence(play.id)} aria-label={inSequence(play.id) ? `Remove ${play.name} from sequence` : `Add ${play.name} to sequence`} onClick={() => addToSequence(play)}>{inSequence(play.id) ? 'In sequence' : 'Add to sequence'}</button><button type="button" className="btn btn-subtle" aria-label={`Share ${play.name}`} onClick={() => share(play)}>Share link</button></div></div></article>;
   const download = (content: string, name: string) => {
     const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url);
@@ -115,7 +139,11 @@ export function PlaybookView() {
   const byId = useMemo(() => new Map(plays.map((play) => [play.id, play])), [plays]);
   const sequencePlays = store.sequence.map((item) => byId.get(item.playId)).filter((play): play is Play => Boolean(play));
   const inSequence = (id: string) => store.sequence.some((item) => item.playId === id);
-  const addToSequence = (play: Play) => store.setSequence(inSequence(play.id) ? store.sequence : [...store.sequence, { playId: play.id }]);
+  const addToSequence = (play: Play) => {
+    if (inSequence(play.id)) return;
+    store.add(play);
+    store.setSequence([...store.sequence, { playId: play.id }]);
+  };
   const removeFromSequence = (id: string) => store.setSequence(store.sequence.filter((item) => item.playId !== id));
   const moveSequence = (index: number, direction: -1 | 1) => {
     const target = index + direction;
@@ -124,28 +152,43 @@ export function PlaybookView() {
     [next[index], next[target]] = [next[target], next[index]];
     store.setSequence(next);
   };
+  const setReps = (playId: string, reps: number | undefined) =>
+    store.setSequence(store.sequence.map((item) => (item.playId === playId ? { ...item, reps } : item)));
+  const parseReps = (raw: string): number | undefined => {
+    const parsed = raw === '' ? NaN : Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : undefined;
+  };
   return <section aria-label="Playbook">
     <h2>Playbook</h2>
-    <div className="controls playbook-filters">
-      <input aria-label="Search plays" placeholder="Search plays" value={query} onChange={(event) => setQuery(event.target.value)} />
-      <label>Category <select aria-label="Filter by category" value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">All categories</option>{options.categories.map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label>Defense <select aria-label="Filter by defensive look" value={look} onChange={(event) => setLook(event.target.value)}><option value="all">All looks</option>{options.looks.map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label>Tag <select aria-label="Filter by tag" value={tag} onChange={(event) => setTag(event.target.value)}><option value="all">All tags</option>{options.tags.map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label>Group <select aria-label="Filter by group" value={group} onChange={(event) => setGroup(event.target.value)}><option value="all">All groups</option>{options.groups.map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label>Sort <select aria-label="Sort plays" value={sort} onChange={(event) => setSort(event.target.value as SortKey)}><option value="name">Name</option><option value="defenseLook">Defense</option><option value="category">Category</option></select></label>
-    </div>
-    <div className="chip-row" role="group" aria-label="Filter by situational tags">{SITUATION_PRESETS.map((preset) => <button key={preset} type="button" className="chip" aria-pressed={situationFilters.includes(preset)} aria-label={`Filter by situational tag ${preset}`} onClick={() => toggleSituationFilter(preset)}>{preset}</button>)}{situationFilters.length > 0 && <button type="button" aria-label="Clear situational filters" onClick={() => setSituationFilters([])}>Clear</button>}</div>
-    <div className="controls" role="group" aria-label="Grouping"><button type="button" aria-pressed={groupByConceptEnabled} aria-label="Group plays by concept" onClick={() => setGroupByConceptEnabled((value) => !value)}>{groupByConceptEnabled ? 'Grouped by concept' : 'Group by concept'}</button></div>
-    <div className="controls">
-      <button onClick={() => download(exportPlaybook(filtered), 'film-lab-playbook.json')}>Export filtered ({filtered.length})</button>
-      <button onClick={() => fileInput.current?.click()}>Import JSON</button>
-      <input ref={fileInput} hidden aria-label="Import JSON file" type="file" accept="application/json" onChange={async (event) => { const file = event.target.files?.[0]; if (file) await openImport(file); event.target.value = ''; }} />
+    <div className="playbook-toolbar">
+      <div className="toolbar-topline">
+        <input className="search-input" aria-label="Search plays" placeholder="Search plays" value={query} onChange={(event) => setQuery(event.target.value)} />
+        <button type="button" className="btn btn-secondary filters-toggle" aria-expanded={filtersOpen} aria-controls="playbook-filters" aria-label="Toggle filters" onClick={() => setFiltersOpen((value) => !value)}>Filters</button>
+        <div className="toolbar-actions" role="group" aria-label="Playbook file actions">
+          <button type="button" className="btn btn-secondary" onClick={() => download(exportPlaybook(filtered), 'film-lab-playbook.json')}>Export filtered ({filtered.length})</button>
+          <button type="button" className="btn btn-secondary" onClick={() => fileInput.current?.click()}>Import JSON</button>
+          <input ref={fileInput} hidden aria-label="Import JSON file" type="file" accept="application/json" onChange={async (event) => { const file = event.target.files?.[0]; if (file) await openImport(file); event.target.value = ''; }} />
+        </div>
+      </div>
+      <div id="playbook-filters" className={`toolbar-filters${filtersOpen ? ' is-open' : ''}`}>
+        <div className="filter-grid" role="group" aria-label="Filters">
+          <label>Category <select aria-label="Filter by category" value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">All categories</option>{options.categories.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Defense <select aria-label="Filter by defensive look" value={look} onChange={(event) => setLook(event.target.value)}><option value="all">All looks</option>{options.looks.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Tag <select aria-label="Filter by tag" value={tag} onChange={(event) => setTag(event.target.value)}><option value="all">All tags</option>{options.tags.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Group <select aria-label="Filter by group" value={group} onChange={(event) => setGroup(event.target.value)}><option value="all">All groups</option>{options.groups.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Sort <select aria-label="Sort plays" value={sort} onChange={(event) => setSort(event.target.value as SortKey)}><option value="name">Name</option><option value="defenseLook">Defense</option><option value="category">Category</option></select></label>
+        </div>
+        <div className="toolbar-chips" role="group" aria-label="Filter by situational tags">
+          <div className="chip-row">{SITUATION_PRESETS.map((preset) => <button key={preset} type="button" className="chip" aria-pressed={situationFilters.includes(preset)} aria-label={`Filter by situational tag ${preset}`} onClick={() => toggleSituationFilter(preset)}>{preset}</button>)}{situationFilters.length > 0 && <button type="button" aria-label="Clear situational filters" onClick={() => setSituationFilters([])}>Clear</button>}</div>
+          <button type="button" className="chip" aria-pressed={groupByConceptEnabled} aria-label="Group plays by concept" onClick={() => setGroupByConceptEnabled((value) => !value)}>{groupByConceptEnabled ? 'Grouped by concept' : 'Group by concept'}</button>
+        </div>
+      </div>
     </div>
     {error && <p role="alert">{error}</p>}
     {shareMessage && <p role="status">{shareMessage}</p>}
     {plan && <aside role="dialog" aria-label="Import preview"><h3>Import preview</h3><p role="status">{plan.counts.new} new · {plan.counts.updated} updated · {plan.counts.unchanged} unchanged · {plan.counts.invalid} invalid.</p><ul aria-label="Import plan">{plan.entries.map((entry, index) => entry.bucket === 'invalid' ? <li key={entryKey(entry, index)}><span>{entryName(entry)}</span> <span>{BUCKET_LABELS[entry.bucket]}</span><ul aria-label={`Problems for ${entryName(entry)}`}>{entry.problems.map((problem) => <li key={problem}>{problem}</li>)}</ul></li> : <li className="controls" key={entryKey(entry, index)}><input type="checkbox" checked={picked.includes(index)} onChange={(event) => togglePick(index, event.target.checked)} aria-label={`${BUCKET_LABELS[entry.bucket]}: ${entry.play.name}`} /><span>{BUCKET_LABELS[entry.bucket]}</span><span>{entry.play.name}</span></li>)}</ul><div className="controls"><button disabled={selectedPlays.length === 0} onClick={() => { store.save(importPlaybook(exportPlaybook(selectedPlays), store.plays)); closePreview(); }}>Apply selected ({selectedPlays.length})</button><button disabled={selectedPlays.length === 0} onClick={() => { store.save(selectedPlays); closePreview(); }}>Replace with selected</button><button onClick={closePreview}>Cancel</button></div></aside>}
     <div className="roster-and-assignments"><RosterPanel /><AssignmentPicker /></div>
-    <aside aria-label="Film sequence editor"><h3>Film sequence</h3>{sequencePlays.length === 0 ? <p role="status">No plays in the sequence. Add plays below to build a scripted Film Room session.</p> : <ol aria-label="Sequence plays">{sequencePlays.map((play, index) => <li key={play.id}>{play.name}<div className="controls"><button aria-label={`Move ${play.name} earlier in sequence`} onClick={() => moveSequence(index, -1)} disabled={index === 0}>↑</button><button aria-label={`Move ${play.name} later in sequence`} onClick={() => moveSequence(index, 1)} disabled={index === sequencePlays.length - 1}>↓</button><button aria-label={`Remove ${play.name} from sequence`} onClick={() => removeFromSequence(play.id)}>Remove</button></div></li>)}</ol>}<div className="controls"><button aria-label="Clear the film sequence" onClick={() => store.setSequence([])}>Clear sequence</button><a href="#film-room" aria-label="Watch the sequence in Film Room">Watch sequence in Film Room</a></div></aside>
+    <aside aria-label="Film sequence editor"><h3>Film sequence</h3>{sequencePlays.length === 0 ? <p role="status">No plays in the sequence. Add plays below to build a scripted Film Room session.</p> : <ol aria-label="Sequence plays">{sequencePlays.map((play, index) => { const item = store.sequence.find((candidate) => candidate.playId === play.id); return <li key={play.id}>{play.name}<div className="controls"><button aria-label={`Move ${play.name} earlier in sequence`} onClick={() => moveSequence(index, -1)} disabled={index === 0}>↑</button><button aria-label={`Move ${play.name} later in sequence`} onClick={() => moveSequence(index, 1)} disabled={index === sequencePlays.length - 1}>↓</button><button aria-label={`Remove ${play.name} from sequence`} onClick={() => removeFromSequence(play.id)}>Remove</button><label className="sequence-reps"><span>Replays</span><input type="number" min={1} value={item?.reps ?? ''} aria-label={`Replays for ${play.name}`} onChange={(event) => setReps(play.id, parseReps(event.target.value))} /></label></div></li>; })}</ol>}<div className="controls"><button aria-label="Clear the film sequence" onClick={() => store.setSequence([])}>Clear sequence</button><a href="#film-room" aria-label="Watch the sequence in Film Room">Watch sequence in Film Room</a></div></aside>
     {filtered.length === 0 ? <p role="status">No plays match these filters. Try clearing the search or filters.</p> : grouped ? <div>{grouped.map(({ concept, plays: conceptPlays }) => <section key={concept} aria-label={`Concept ${concept}`}><h3>{concept} ({conceptPlays.length})</h3><div className="cards">{conceptPlays.map((play) => renderPlayCard(play))}</div></section>)}</div> : <div className="cards">{filtered.map((play) => renderPlayCard(play))}</div>}
   </section>;
 }

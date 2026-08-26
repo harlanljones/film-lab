@@ -69,10 +69,18 @@ export function resolveSelectedPlay(plays: Play[], selectedPlayId: string | null
   return plays.find((play) => play.id === selectedPlayId) ?? plays[0] ?? fallback;
 }
 
-export function resolveSequence(plays: Play[], sequence: ScriptItem[]): Play[] {
-  if (!sequence.length) return plays;
+export function resolveSequence(plays: Play[], sequence: ScriptItem[]): { playlist: Play[]; reps: number[] } {
+  if (!sequence.length) return { playlist: plays, reps: plays.map(() => 1) };
   const byId = new Map(plays.map((play) => [play.id, play]));
-  return sequence.map((item) => byId.get(item.playId)).filter((play): play is Play => play !== undefined);
+  const playlist: Play[] = [];
+  const reps: number[] = [];
+  for (const item of sequence) {
+    const play = byId.get(item.playId);
+    if (!play) continue;
+    playlist.push(play);
+    reps.push(item.reps ?? 1);
+  }
+  return { playlist, reps };
 }
 
 export function exportPlaybook(plays: Play[]): string {

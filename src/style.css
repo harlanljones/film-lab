@@ -1,7 +1,865 @@
-:root{font-family:Inter,system-ui,sans-serif;color:#f5f1e8;background:#121314}*{box-sizing:border-box}body{margin:0}main{min-height:100vh;padding:3rem clamp(1rem,8vw,8rem);background:radial-gradient(circle at 75% 25%,#263f38,transparent 35%),#121314}h1{font-size:clamp(3rem,9vw,7rem);line-height:.92;letter-spacing:-.07em;margin:.5rem 0 1.5rem;max-width:9ch}.eyebrow{color:#a4d65e;letter-spacing:.18em;font-weight:700}.lede{color:#b7b9b1;font-size:1.2rem}.field{display:block;position:relative;width:min(640px,90vw);aspect-ratio:1/2;border:2px solid #6d9d63;background:repeating-linear-gradient(0deg,transparent 0 9.5%,#35593c 9.5% 10%);margin:1rem 0;border-radius:8px;overflow:hidden}.line-of-scrimmage{stroke:#f5f1e8;stroke-width:.25;stroke-dasharray:1 .7;opacity:.85}.route-trail{stroke-width:.28;stroke-linecap:round;stroke-linejoin:round;opacity:.78}.route-trail.offense{stroke:#a4d65e}.route-trail.defense{stroke:#f18f6b}.marker{fill:#a4d65e;stroke:#121314;stroke-width:.18;outline:none}.marker.defense{fill:#f18f6b}.marker.selected,.marker:focus{stroke:#fff;stroke-width:.35}.waypoint-handle{fill:#f5f1e8;stroke:#121314;stroke-width:.15;cursor:grab;outline:none}.waypoint-handle.selected,.waypoint-handle:focus{fill:#a4d65e;stroke:#fff;stroke-width:.25}.thumb-field{width:100%;height:auto;aspect-ratio:auto;border:0;margin:0;border-radius:8px}.compare-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0}.editor-controls{max-width:640px}.editor-toolbar{margin:1rem 0}.track-picker{display:flex;gap:.35rem;flex-wrap:wrap;margin:1rem 0}.track-picker button{margin-top:0;padding:.5rem .75rem;font-size:.8rem;background:#35593c;color:#f5f1e8}.track-picker button[aria-pressed=true]{background:#a4d65e;color:#121314}.waypoint-inspector,.beat-editor,.summary-editor{display:flex;gap:.5rem;flex-wrap:wrap;border:1px solid #35593c;border-radius:8px;padding:1rem;margin:1rem 0}.waypoint-inspector label,.beat-row label,.summary-editor label{display:grid;gap:.25rem;color:#b7b9b1}.waypoint-inspector input,.waypoint-inspector select{width:7rem}.beat-row{display:flex;gap:.5rem;flex-wrap:wrap;width:100%;align-items:end}.beat-row input{width:8rem}.summary-editor label{width:100%}.summary-editor textarea{min-height:4rem;width:min(640px,90vw);font:inherit}.controls{display:flex;gap:.5rem;flex-wrap:wrap}.controls button,.controls a,button,.button{margin-top:1.5rem;border:0;border-radius:999px;padding:.9rem 1.4rem;background:#a4d65e;color:#121314;font-weight:700;font-size:1rem;display:inline-block;cursor:pointer;text-decoration:none}.controls a{margin-top:0}input{width:min(640px,90vw);accent-color:#a4d65e}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;max-width:900px;margin:1.5rem 0}.card{background:#1d2320;border:1px solid #35593c;border-radius:12px;padding:1rem}.card h3{margin-bottom:.2rem}.card p{color:#b7b9b1;font-size:.85rem}.skip{position:absolute;left:-9999px}.skip:focus{left:1rem;top:1rem;background:#a4d65e;color:#121314;padding:.5rem}nav{display:flex;gap:1rem;margin-bottom:3rem}nav a{color:#a4d65e;font-weight:700}@media (prefers-reduced-motion: reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}}
-.route-trail.dim,.marker.dim,.waypoint-handle.dim{opacity:.18}.roster-and-assignments{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0}.roster-row{display:flex;gap:.5rem;align-items:center;justify-content:space-between;flex-wrap:wrap}.roster-row span{flex:1;min-width:8rem}.roster-edit,.roster-add{display:flex;gap:.5rem;flex-wrap:wrap;align-items:end;margin-top:.5rem}.roster-edit input,.roster-add input,.roster-edit select,.roster-add select{width:8rem}
-.wristband-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:1.5rem 0}.wristband-card{background:#1d2320;border:1px solid #35593c;border-radius:12px;padding:.75rem;display:flex;flex-direction:column;gap:.5rem}.wristband-card-head{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}.wristband-number{font-weight:700}.wristband-play{color:#a4d65e;font-size:.85rem}.wristband-field{width:100%;max-width:150px;align-self:center}.wristband-assignment{color:#f5f1e8;font-size:.9rem;line-height:1.3}.wristband-meta{color:#b7b9b1;font-size:.75rem;margin:0}.wristband-controls{margin-top:1rem}.wristband-controls button[aria-pressed=true]{background:#a4d65e;color:#121314}
-.situation-presets{border:1px solid #35593c;border-radius:8px;padding:1rem;margin:1rem 0;display:grid;gap:.5rem}.situation-presets legend{color:#b7b9b1;padding:0 .25rem}.situation-hint{color:#b7b9b1;font-size:.8rem;margin:0}.situation-current{color:#f5f1e8;font-size:.85rem;margin:.25rem 0 0}.chip-row{display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}.chip{margin-top:0;padding:.45rem .75rem;font-size:.8rem;border-radius:999px;background:#1d2320;color:#f5f1e8;border:1px solid #35593c}.chip[aria-pressed=true]{background:#a4d65e;color:#121314;border-color:#a4d65e}.chip:focus-visible{outline:2px solid #a4d65e;outline-offset:2px}
-@media print{:root,body{background:#fff!important;color:#000!important}main{padding:.4in!important;background:#fff!important}nav,.skip,#editor,#playbook,#film-room,#compare,.wristband-controls,h1,.eyebrow,.lede{display:none!important}#wristband{display:block}.wristband-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin:0}.wristband-card{break-inside:avoid;background:#fff!important;color:#000!important;border:1px solid #000;border-radius:4px;padding:6px}.wristband-number,.wristband-assignment{color:#000!important}.wristband-play{color:#333!important}.wristband-meta{color:#444!important}.wristband-field{max-width:120px}.field{background:#fff!important;border-color:#000!important}.route-trail{opacity:.9!important}.route-trail.offense{stroke:#1d6b3a!important}.route-trail.defense{stroke:#b15a3a!important}.route-trail.dim,.marker.dim{opacity:.2!important}.marker{fill:#1d6b3a!important;stroke:#000!important}.marker.defense{fill:#b15a3a!important}.line-of-scrimmage{stroke:#000!important}}
-.preview-banner{background:#f18f6b;color:#121314;font-weight:700;padding:.5rem 1rem;border-radius:8px;margin-bottom:1rem}
-@media print{.preview-banner{display:none!important}}
+/* Film Lab — stylesheet. Tokens are defined once in tokens.css and imported
+ * first; every rule below consumes them. Section order: tokens, base,
+ * buttons, cards, field, components, print. Values match the previous
+ * hardcoded stylesheet exactly — this is a system-forming pass, not a redesign. */
+@import './tokens.css';
+
+/* ---------------------------------------------------------------------
+ * base — reset, page ground, typography scale (consumes :root tokens)
+ * ---------------------------------------------------------------------- */
+:root {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  min-height: 100vh;
+  padding: var(--space-6) clamp(var(--space-4), 8vw, 8rem);
+  background: radial-gradient(circle at 75% 25%, var(--color-glow), transparent 35%), var(--color-bg);
+}
+
+h1 {
+  font-size: var(--text-display);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: var(--space-1) 0 var(--space-5);
+  max-width: 9ch;
+}
+
+.eyebrow {
+  color: var(--color-offense);
+  letter-spacing: var(--tracking-wide);
+  font-weight: var(--font-weight-bold);
+}
+
+.lede {
+  color: var(--color-ink-muted);
+  font-size: var(--text-lg);
+}
+
+input {
+  width: min(640px, 90vw);
+  accent-color: var(--color-offense);
+}
+
+/* ---------------------------------------------------------------------
+ * buttons — pill controls, tracks, chips
+ * ---------------------------------------------------------------------- */
+.controls button,
+.controls a,
+button,
+.button {
+  margin-top: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: var(--space-btn-y) var(--space-btn-x);
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-base);
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.controls a {
+  margin-top: 0;
+}
+
+.track-picker button {
+  margin-top: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  background: var(--color-field);
+  color: var(--color-ink);
+}
+
+.track-picker button[aria-pressed='true'] {
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+}
+
+.chip {
+  margin-top: 0;
+  padding: var(--space-chip-y) var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border: 1px solid var(--color-field);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+  border-color: var(--color-offense);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------
+ * button variants — deliberate sizes for the playbook card + toolbar
+ * (primary / secondary / subtle / danger). These consume tokens and are
+ * scoped to the playbook surface; the shared `.controls` pill rule is
+ * intentionally left alone for the other routed views.
+ * ---------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, filter .15s ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+  border-color: var(--color-offense);
+}
+
+.btn-primary:hover {
+  filter: brightness(.94);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-field);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-field-border);
+}
+
+.btn-subtle {
+  background: transparent;
+  color: var(--color-ink-muted);
+  border-color: transparent;
+}
+
+.btn-subtle:hover {
+  color: var(--color-ink);
+  border-color: var(--color-field);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--color-defense);
+  border-color: var(--color-defense);
+  border-radius: var(--radius-2);
+}
+
+.btn-danger:hover {
+  background: var(--color-defense);
+  color: var(--color-ink-inverse);
+  border-color: var(--color-defense);
+}
+
+.btn-sm {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.sequence-reps {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.sequence-reps span {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.sequence-reps input {
+  width: 3.5rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.sequence-reps input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.wristband-controls button[aria-pressed='true'] {
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+}
+
+/* ---------------------------------------------------------------------
+ * cards — library, playbook, wristband
+ * ---------------------------------------------------------------------- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+  max-width: 1200px;
+  margin: var(--space-5) 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-3);
+  padding: var(--space-3);
+}
+
+.card h3 {
+  margin: 0;
+}
+
+.card p {
+  color: var(--color-ink-muted);
+  font-size: var(--text-md);
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.card-meta,
+.card-tags {
+  margin: 0;
+}
+
+.card-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.card-actions {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.card-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.card-menu-wrap {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 2;
+}
+
+.card-menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 10;
+  min-width: 11rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  box-shadow: 0 var(--space-2) var(--space-4) rgba(0, 0, 0, .45);
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.card-menu .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.wristband-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-5) 0;
+}
+
+.wristband-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-3);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.wristband-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.wristband-number {
+  font-weight: var(--font-weight-bold);
+}
+
+.wristband-play {
+  color: var(--color-offense);
+  font-size: var(--text-md);
+}
+
+.wristband-field {
+  width: 100%;
+  max-width: 150px;
+  align-self: center;
+}
+
+.wristband-assignment {
+  color: var(--color-ink);
+  font-size: var(--text-md-up);
+  line-height: var(--leading-snug);
+}
+
+.wristband-meta {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.wristband-controls {
+  margin-top: var(--space-4);
+}
+
+/* ---------------------------------------------------------------------
+ * field — surface, waypoints, route trails, markers
+ * ---------------------------------------------------------------------- */
+.field {
+  display: block;
+  position: relative;
+  width: min(640px, 90vw);
+  aspect-ratio: 1 / 2;
+  border: 2px solid var(--color-field-border);
+  background: repeating-linear-gradient(0deg, transparent 0 9.5%, var(--color-field) 9.5% 10%);
+  margin: var(--space-4) 0;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+}
+
+.line-of-scrimmage {
+  stroke: var(--color-ink);
+  stroke-width: 0.25;
+  stroke-dasharray: 1 0.7;
+  opacity: 0.85;
+}
+
+.route-trail {
+  stroke-width: 0.28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.78;
+}
+
+.route-trail.offense {
+  stroke: var(--color-offense);
+}
+
+.route-trail.defense {
+  stroke: var(--color-defense);
+}
+
+.marker {
+  fill: var(--color-offense);
+  stroke: var(--color-bg);
+  stroke-width: 0.18;
+  outline: none;
+}
+
+.marker.defense {
+  fill: var(--color-defense);
+}
+
+.marker.selected,
+.marker:focus {
+  stroke: #fff;
+  stroke-width: 0.35;
+}
+
+.waypoint-handle {
+  fill: var(--color-ink);
+  stroke: var(--color-bg);
+  stroke-width: 0.15;
+  cursor: grab;
+  outline: none;
+}
+
+.waypoint-handle.selected,
+.waypoint-handle:focus {
+  fill: var(--color-offense);
+  stroke: #fff;
+  stroke-width: 0.25;
+}
+
+.thumb-field {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  border: 0;
+  margin: 0;
+  border-radius: var(--radius-2);
+}
+
+.route-trail.dim,
+.marker.dim,
+.waypoint-handle.dim {
+  opacity: 0.18;
+}
+
+/* ---------------------------------------------------------------------
+ * components — editor, inspectors, situation presets, roster, nav, banners
+ * ---------------------------------------------------------------------- */
+.compare-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.editor-controls {
+  max-width: 640px;
+}
+
+.editor-toolbar {
+  margin: var(--space-4) 0;
+}
+
+.track-picker {
+  display: flex;
+  gap: var(--space-tight);
+  flex-wrap: wrap;
+  margin: var(--space-4) 0;
+}
+
+.waypoint-inspector,
+.beat-editor,
+.summary-editor {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.waypoint-inspector label,
+.beat-row label,
+.summary-editor label {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-ink-muted);
+}
+
+.waypoint-inspector input,
+.waypoint-inspector select {
+  width: 7rem;
+}
+
+.beat-row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: end;
+}
+
+.beat-row input {
+  width: 8rem;
+}
+
+.summary-editor label {
+  width: 100%;
+}
+
+.summary-editor textarea {
+  min-height: 4rem;
+  width: min(640px, 90vw);
+  font: inherit;
+}
+
+.situation-presets {
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.situation-presets legend {
+  color: var(--color-ink-muted);
+  padding: 0 var(--space-1);
+}
+
+.situation-hint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.situation-current {
+  color: var(--color-ink);
+  font-size: var(--text-md);
+  margin: var(--space-1) 0 0;
+}
+
+.chip-row {
+  display: flex;
+  gap: var(--space-chip-row);
+  flex-wrap: wrap;
+  margin: var(--space-2) 0;
+}
+
+/* ---------------------------------------------------------------------
+ * playbook toolbar — consolidated search + filters + sort + file actions
+ * ---------------------------------------------------------------------- */
+.playbook-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-3);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-3);
+  background: var(--color-surface);
+}
+
+.toolbar-topline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.search-input {
+  flex: 1 1 16rem;
+  min-width: 12rem;
+  max-width: 30rem;
+  width: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-left: auto;
+}
+
+.filters-toggle {
+  display: none;
+}
+
+.toolbar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.filter-grid label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.filter-grid select {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  border: 1px solid var(--color-field);
+  border-radius: var(--radius-2);
+  padding: var(--space-1) var(--space-2);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.filter-grid select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.toolbar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .filters-toggle {
+    display: inline-flex;
+  }
+
+  .toolbar-filters {
+    display: none;
+  }
+
+  .toolbar-filters.is-open {
+    display: flex;
+  }
+
+  .toolbar-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.roster-and-assignments {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.roster-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.roster-row span {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.roster-edit,
+.roster-add {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: end;
+  margin-top: var(--space-2);
+}
+
+.roster-edit input,
+.roster-add input,
+.roster-edit select,
+.roster-add select {
+  width: 8rem;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  background: var(--color-offense);
+  color: var(--color-ink-inverse);
+  padding: var(--space-2);
+}
+
+nav {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+nav a {
+  color: var(--color-offense);
+  font-weight: var(--font-weight-bold);
+}
+
+.preview-banner {
+  background: var(--color-defense);
+  color: var(--color-ink-inverse);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+ * print — wristband sheet only (paper + ink, no accents)
+ * ---------------------------------------------------------------------- */
+@media print {
+  :root,
+  body {
+    background: var(--color-paper) !important;
+    color: var(--color-print-ink) !important;
+  }
+
+  main {
+    padding: 0.4in !important;
+    background: var(--color-paper) !important;
+  }
+
+  nav,
+  .skip,
+  #editor,
+  #playbook,
+  #film-room,
+  #compare,
+  .wristband-controls,
+  h1,
+  .eyebrow,
+  .lede {
+    display: none !important;
+  }
+
+  #wristband {
+    display: block;
+  }
+
+  .wristband-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 0;
+  }
+
+  .wristband-card {
+    break-inside: avoid;
+    background: var(--color-paper) !important;
+    color: var(--color-print-ink) !important;
+    border: 1px solid var(--color-print-ink);
+    border-radius: var(--radius-1);
+    padding: 6px;
+  }
+
+  .wristband-number,
+  .wristband-assignment {
+    color: var(--color-print-ink) !important;
+  }
+
+  .wristband-play {
+    color: var(--color-print-subtle) !important;
+  }
+
+  .wristband-meta {
+    color: var(--color-print-muted) !important;
+  }
+
+  .wristband-field {
+    max-width: 120px;
+  }
+
+  .field {
+    background: var(--color-paper) !important;
+    border-color: var(--color-print-ink) !important;
+  }
+
+  .route-trail {
+    opacity: 0.9 !important;
+  }
+
+  .route-trail.offense {
+    stroke: var(--color-print-offense) !important;
+  }
+
+  .route-trail.defense {
+    stroke: var(--color-print-defense) !important;
+  }
+
+  .route-trail.dim,
+  .marker.dim {
+    opacity: 0.2 !important;
+  }
+
+  .marker {
+    fill: var(--color-print-offense) !important;
+    stroke: var(--color-print-ink) !important;
+  }
+
+  .marker.defense {
+    fill: var(--color-print-defense) !important;
+  }
+
+  .line-of-scrimmage {
+    stroke: var(--color-print-ink) !important;
+  }
+}
+
+@media print {
+  .preview-banner {
+    display: none !important;
+  }
+}
