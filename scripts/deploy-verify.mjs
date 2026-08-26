@@ -199,7 +199,7 @@ async function checkBrowserWalk(url_, lhResult, fpsResult) {
 // ── Lighthouse accessibility ──────────────────────────────────────────────────
 
 async function checkLighthouse(url_) {
-  // Try @lhci/cli first, then fallback to direct lighthouse CLI
+  // Prefer the repo's pinned lighthouse devDependency; fall back to PATH.
   const candidates = [
     './node_modules/.bin/lighthouse',
     './node_modules/@lhci/cli/node_modules/lighthouse-cli/index.cjs',
@@ -208,20 +208,38 @@ async function checkLighthouse(url_) {
   for (const p of candidates) {
     if (existsSync(p)) { lhBin = p; break; }
   }
-  // Fallback: try lighthouse on PATH
   if (!lhBin) {
     const result = spawnSync('lighthouse', ['--version'], { stdio: ['pipe','pipe','ignore'] });
     if (result.status === 0) lhBin = 'lighthouse';
   }
   if (!lhBin) {
-    console.log('Lighthouse not installed; skipping a11y (install lighthouse globally or via npm for full CI coverage).');
+    console.log('Lighthouse not installed; skipping a11y (add lighthouse to devDependencies for full CI coverage).');
     return { name: 'lighthouse_a11y', ok: true, detail: { skipped: true } };
   }
   console.log('→ Running Lighthouse a11y audit on ' + url_ + '…');
   const tmpReport = '/tmp/lh-deploy-' + Date.now() + '.json';
-  const lh = spawnSync(lhBin, [url_, '--output=json', '--output-path=' + tmpReport, '--preset=desktop', '--disable-full-page-screenshot', '--throttling-method=provided'], {
-    stdio: ['pipe', 'ignore', 'pipe'], timeout: 120000,
-  });
+  // Point Lighthouse at Playwright's chromium so it can actually launch in CI
+  // (LH:ChromeLauncher "Waiting for browser" happens when no Chrome is found).
+  // CHROME_PATH is the canonical env Lighthouse reads; fall back to a best-effort
+  // Playwright cache lookup. --no-sandbox is required inside the Actions container.
+  const env = { ...process.env };
+  if (!env.CHROME_PATH) {
+    try {
+      const { chromium } = await import('playwright');
+      const path = chromium.executablePath();
+      if (path && existsSync(path)) env.CHROME_PATH = path;
+    } catch { /* Playwright unavailable; rely on CHROME_PATH already set by caller */ }
+  }
+  const args = [
+    url_,
+    '--output=json',
+    '--output-path=' + tmpReport,
+    '--preset=desktop',
+    '--disable-full-page-screenshot',
+    '--throttling-method=provided',
+    '--chrome-flags="--no-sandbox --headless=new"',
+  ];
+  const lh = spawnSync(lhBin, args, { stdio: ['pipe', 'ignore', 'pipe'], timeout: 120000, env });
   if (lh.status !== 0) { console.error(`Lighthouse exited ${lh.status}: ${lh.stderr?.toString()?.slice(0,200) || ''}`); return { name: 'lighthouse_a11y', ok: false, detail: {} }; }
   const report = JSON.parse(readFileSync(tmpReport, 'utf8'));
   const score = Math.round(report?.categories?.accessibility?.score * 100);
