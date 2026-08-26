@@ -137,6 +137,30 @@ describe('editor browser-style flow', () => {
     expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual([{ playId: 'starter-1' }]);
   });
 
+  it('HJ-447: the card sequence toggle removes an in-sequence play and re-adds it', async () => {
+    await renderApp();
+    const toggle = (label: string) => Array.from(document.querySelectorAll('#playbook .card-secondary .btn-secondary')).find((button) => button.getAttribute('aria-label') === label);
+
+    const addMesh = toggle('Add Mesh to sequence');
+    expect(addMesh).toBeDefined();
+    await click(addMesh!);
+    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual([{ playId: 'starter-1' }]);
+
+    const removeMesh = toggle('Remove Mesh from sequence');
+    expect(removeMesh).toBeDefined();
+    expect(removeMesh!.getAttribute('aria-pressed')).toBe('true');
+    expect(removeMesh!.textContent).toContain('Remove from sequence');
+    await click(removeMesh!);
+    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual([]);
+
+    const reAdd = toggle('Add Mesh to sequence');
+    expect(reAdd).toBeDefined();
+    expect(reAdd!.getAttribute('aria-pressed')).toBe('false');
+    expect(reAdd!.textContent).toContain('Add to sequence');
+    await click(reAdd!);
+    expect(JSON.parse(localStorage.getItem('film-lab.playbook')!).sequence).toEqual([{ playId: 'starter-1' }]);
+  });
+
   it('groups: assigns a group tag, persists it across refresh, and filters by it', async () => {
     await renderApp();
     const originalPrompt = window.prompt;
